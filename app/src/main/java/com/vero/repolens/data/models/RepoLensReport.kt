@@ -19,7 +19,10 @@ data class RepoLensReport(
     val risks: List<Risk> = emptyList(),
     val prReadiness: PrReadiness? = null,
     val documentation: Documentation? = null,
-    val bobUsage: BobUsage? = null
+    val bobUsage: BobUsage? = null,
+    val performance: PerformanceMetrics? = null,
+    val recommendations: List<SmartRecommendation> = emptyList(),
+    val architectureDiagram: ArchitectureDiagram? = null
 )
 
 @Serializable
@@ -420,6 +423,75 @@ data class BobUsage(
 data class BobIdeSession(
     val title: String,
     val expectedExportPath: String? = null
+
+@Serializable
+data class PerformanceMetrics(
+    val buildTimeSeconds: Int,
+    val appSizeMB: Double,
+    val methodCount: Int,
+    val largeFiles: List<LargeFile> = emptyList(),
+    val complexMethods: List<ComplexMethod> = emptyList(),
+    val slowModules: List<SlowModule> = emptyList()
+)
+
+@Serializable
+data class LargeFile(
+    val path: String,
+    val sizeKB: Int,
+    val linesOfCode: Int
+)
+
+@Serializable
+data class ComplexMethod(
+    val name: String,
+    val filePath: String,
+    val complexity: Int,
+    val linesOfCode: Int
+)
+
+@Serializable
+data class SlowModule(
+    val name: String,
+    val buildTimeSeconds: Int
+)
+
+@Serializable
+data class SmartRecommendation(
+    val id: String,
+    val title: String,
+    val description: String,
+    val reasoning: String,
+    val impact: ImpactLevel,
+    val effort: EffortLevel,
+    val category: String,
+    val codeExample: String? = null,
+    val learnMoreUrl: String? = null
+)
+
+enum class ImpactLevel { LOW, MEDIUM, HIGH }
+enum class EffortLevel { SMALL, MEDIUM, LARGE }
+
+@Serializable
+data class ArchitectureDiagram(
+    val nodes: List<DiagramNode> = emptyList(),
+    val connections: List<DiagramConnection> = emptyList()
+)
+
+@Serializable
+data class DiagramNode(
+    val id: String,
+    val label: String,
+    val type: String,
+    val x: Float,
+    val y: Float
+)
+
+@Serializable
+data class DiagramConnection(
+    val from: String,
+    val to: String,
+    val label: String
+)
 )
 
 // Made with Bob

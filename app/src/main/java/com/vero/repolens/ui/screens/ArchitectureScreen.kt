@@ -4,15 +4,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.vero.repolens.data.models.Architecture
+import com.vero.repolens.data.models.DiagramNode
 import com.vero.repolens.ui.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,6 +20,9 @@ fun ArchitectureScreen(
     architecture: Architecture,
     onNavigateBack: () -> Unit
 ) {
+    var showDiagram by remember { mutableStateOf(false) }
+    var selectedNode by remember { mutableStateOf<DiagramNode?>(null) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -29,10 +31,97 @@ fun ArchitectureScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    if (architecture.diagram != null) {
+                        IconButton(onClick = { showDiagram = !showDiagram }) {
+                            Icon(
+                                imageVector = if (showDiagram) Icons.Default.List else Icons.Default.AccountTree,
+                                contentDescription = if (showDiagram) "Show List" else "Show Diagram"
+                            )
+                        }
+                    }
                 }
             )
         }
     ) { paddingValues ->
+        if (showDiagram && architecture.diagram != null) {
+            // Diagram view
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                // Diagram
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    ArchitectureDiagram(
+                        diagram = architecture.diagram,
+                        onNodeTap = { node ->
+                            selectedNode = node
+                        }
+                    )
+                }
+
+                // Legend
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    DiagramLegend()
+                }
+
+                // Selected node details
+                selectedNode?.let { node ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = node.label,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                    Text(
+                                        text = node.type,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                                IconButton(onClick = { selectedNode = null }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Close",
+                                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // List view (original content)
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -322,6 +411,9 @@ fun ArchitectureScreen(
                         )
                     }
                 }
+            }
+            
+            // Closing brace for list view
             }
         }
     }

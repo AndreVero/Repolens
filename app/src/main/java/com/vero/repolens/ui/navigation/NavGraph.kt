@@ -64,9 +64,23 @@ fun RepoLensNavGraph(
                     },
                     onNavigateToSearch = {
                         navController.navigate(NavRoutes.SEARCH)
+                    },
+                    onNavigateToActionItems = {
+                        navController.navigate(NavRoutes.ACTION_ITEMS)
+                    },
+                    onNavigateToPerformance = {
+                        navController.navigate(NavRoutes.PERFORMANCE)
+                    },
+                    onNavigateToRecommendations = {
+                        navController.navigate(NavRoutes.RECOMMENDATIONS)
+                    },
+                    onNavigateToExport = {
+                        // Export handled by dialog
                     }
                 )
             }
+        }
+
         composable(NavRoutes.SEARCH) {
             SearchScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -89,8 +103,12 @@ fun RepoLensNavGraph(
                     }
                 }
             )
-        }
 
+        composable(NavRoutes.ACTION_ITEMS) {
+            ActionItemsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
         }
 
         composable(NavRoutes.ARCHITECTURE) {
@@ -275,6 +293,33 @@ fun RepoLensNavGraph(
                         ErrorState(
                             message = "No PR readiness information available",
                             onRetry = { navController.popBackStack() }
+        composable(NavRoutes.PERFORMANCE) {
+            when (val state = uiState) {
+                is UiState.Success -> {
+                    if (state.report.performanceMetrics != null) {
+                        PerformanceScreen(
+                            metrics = state.report.performanceMetrics,
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    } else {
+                        ErrorState(
+                            message = "No performance metrics available",
+                            onRetry = { navController.popBackStack() }
+                        )
+                    }
+                }
+                else -> LoadingState()
+            }
+        }
+
+        composable(NavRoutes.RECOMMENDATIONS) {
+            when (val state = uiState) {
+                is UiState.Success -> RecommendationsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+                else -> LoadingState()
+            }
+        }
                         )
                     }
                 }

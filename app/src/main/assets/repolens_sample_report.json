@@ -952,5 +952,176 @@
       "Disable RepoLens visualizer entry point.",
       "Keep schema and models for future iteration."
     ]
-  }
+  },
+  "performanceMetrics": {
+    "buildTimeSeconds": 45,
+    "appSizeMB": 12.5,
+    "methodCount": 8542,
+    "largeFiles": [
+      {
+        "path": "app/src/main/java/com/example/app/ui/home/HomeScreen.kt",
+        "sizeKB": 85,
+        "linesOfCode": 450
+      },
+      {
+        "path": "app/src/main/java/com/example/app/data/repository/UserRepositoryImpl.kt",
+        "sizeKB": 62,
+        "linesOfCode": 380
+      }
+    ],
+    "complexMethods": [
+      {
+        "name": "processUserData",
+        "filePath": "app/src/main/java/com/example/app/domain/usecase/ProcessUserDataUseCase.kt",
+        "complexity": 15,
+        "linesOfCode": 120
+      },
+      {
+        "name": "validateForm",
+        "filePath": "app/src/main/java/com/example/app/ui/profile/ProfileViewModel.kt",
+        "complexity": 12,
+        "linesOfCode": 95
+      }
+    ],
+    "slowModules": [
+      {
+        "name": "app",
+        "buildTimeSeconds": 25
+      },
+      {
+        "name": "core-network",
+        "buildTimeSeconds": 12
+      }
+    ]
+  },
+  "smartRecommendations": [
+    {
+      "id": "rec-1",
+      "title": "Add Unit Tests for ViewModels",
+      "description": "Several ViewModels lack comprehensive unit tests. Adding tests will improve code quality and catch bugs early.",
+      "reasoning": "ViewModels contain business logic that should be tested. Current test coverage is only 45% for ViewModels.",
+      "impact": "HIGH",
+      "effort": "MEDIUM",
+      "category": "Testing",
+      "codeExample": "@Test\nfun `when user logs in successfully, navigate to home`() {\n    // Arrange\n    val viewModel = LoginViewModel(loginUseCase)\n    \n    // Act\n    viewModel.login(\"user@example.com\", \"password\")\n    \n    // Assert\n    assertEquals(LoginState.Success, viewModel.state.value)\n}",
+      "learnMoreUrl": "https://developer.android.com/training/testing/unit-testing"
+    },
+    {
+      "id": "rec-2",
+      "title": "Implement Proper Error Handling",
+      "description": "Network calls lack comprehensive error handling. Add retry logic and user-friendly error messages.",
+      "reasoning": "Current implementation shows generic errors. Users need clear feedback when operations fail.",
+      "impact": "HIGH",
+      "effort": "SMALL",
+      "category": "Performance",
+      "codeExample": "sealed class Result<out T> {\n    data class Success<T>(val data: T) : Result<T>()\n    data class Error(val exception: Exception, val message: String) : Result<Nothing>()\n    object Loading : Result<Nothing>()\n}",
+      "learnMoreUrl": "https://developer.android.com/kotlin/coroutines/coroutines-best-practices"
+    },
+    {
+      "id": "rec-3",
+      "title": "Optimize Large Files",
+      "description": "HomeScreen.kt has 450 lines. Consider breaking it into smaller, reusable components.",
+      "reasoning": "Large files are harder to maintain and test. Smaller components improve code organization.",
+      "impact": "MEDIUM",
+      "effort": "MEDIUM",
+      "category": "Code Quality",
+      "codeExample": "@Composable\nfun HomeScreen() {\n    Column {\n        HomeHeader()\n        HomeContent()\n        HomeFooter()\n    }\n}\n\n@Composable\nprivate fun HomeHeader() { /* ... */ }",
+      "learnMoreUrl": null
+    },
+    {
+      "id": "rec-4",
+      "title": "Add Security Best Practices",
+      "description": "Implement certificate pinning and encrypt sensitive data in local storage.",
+      "reasoning": "Current implementation stores tokens in SharedPreferences without encryption.",
+      "impact": "HIGH",
+      "effort": "LARGE",
+      "category": "Security",
+      "codeExample": "val encryptedPrefs = EncryptedSharedPreferences.create(\n    \"secure_prefs\",\n    masterKey,\n    context,\n    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,\n    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM\n)",
+      "learnMoreUrl": "https://developer.android.com/topic/security/data"
+    },
+    {
+      "id": "rec-5",
+      "title": "Reduce Method Count",
+      "description": "Current method count is 8542. Consider using R8/ProGuard optimization and removing unused dependencies.",
+      "reasoning": "High method count can impact build times and app size. Optimization will improve performance.",
+      "impact": "MEDIUM",
+      "effort": "SMALL",
+      "category": "Performance",
+      "codeExample": "android {\n    buildTypes {\n        release {\n            minifyEnabled true\n            shrinkResources true\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')\n        }\n    }\n}",
+      "learnMoreUrl": "https://developer.android.com/studio/build/shrink-code"
+    }
+  ],
+  "architectureDiagram": {
+    "nodes": [
+      {
+        "id": "ui",
+        "label": "UI Layer",
+        "type": "layer",
+        "x": 50,
+        "y": 50
+      },
+      {
+        "id": "viewmodel",
+        "label": "ViewModel",
+        "type": "component",
+        "x": 50,
+        "y": 200
+      },
+      {
+        "id": "usecase",
+        "label": "Use Cases",
+        "type": "component",
+        "x": 250,
+        "y": 200
+      },
+      {
+        "id": "repository",
+        "label": "Repository",
+        "type": "component",
+        "x": 450,
+        "y": 200
+      },
+      {
+        "id": "network",
+        "label": "Network",
+        "type": "datasource",
+        "x": 350,
+        "y": 350
+      },
+      {
+        "id": "database",
+        "label": "Database",
+        "type": "datasource",
+        "x": 550,
+        "y": 350
+      }
+    ],
+    "connections": [
+      {
+        "from": "ui",
+        "to": "viewmodel",
+        "label": "observes"
+      },
+      {
+        "from": "viewmodel",
+        "to": "usecase",
+        "label": "calls"
+      },
+      {
+        "from": "usecase",
+        "to": "repository",
+        "label": "uses"
+      },
+      {
+        "from": "repository",
+        "to": "network",
+        "label": "fetches"
+      },
+      {
+        "from": "repository",
+        "to": "database",
+        "label": "caches"
+      }
+    ]
 }
+  }

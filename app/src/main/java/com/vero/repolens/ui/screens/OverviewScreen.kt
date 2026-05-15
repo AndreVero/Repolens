@@ -30,8 +30,23 @@ fun OverviewScreen(
     onNavigateToTesting: () -> Unit,
     onNavigateToRisks: () -> Unit,
     onNavigateToPR: () -> Unit,
-    onNavigateToSearch: () -> Unit = {}
+    onNavigateToSearch: () -> Unit = {},
+    onNavigateToActionItems: () -> Unit = {},
+    onNavigateToPerformance: () -> Unit = {},
+    onNavigateToRecommendations: () -> Unit = {},
+    onNavigateToExport: () -> Unit = {}
 ) {
+    var showExportDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    if (showExportDialog) {
+        ExportDialog(
+            onDismiss = { showExportDialog = false },
+            onExport = { format ->
+                showExportDialog = false
+                onNavigateToExport()
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -41,6 +56,12 @@ fun OverviewScreen(
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Search"
+                        )
+                    }
+                    IconButton(onClick = { showExportDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Export"
                         )
                     }
                 },
@@ -251,6 +272,36 @@ fun OverviewScreen(
                         onClick = onNavigateToPR
                     )
                 }
+            }
+
+            // New Features Section
+            item {
+                SectionCard(
+                    title = "Action Items",
+                    subtitle = "Manage your development tasks",
+                    icon = Icons.Default.Task,
+                    onClick = onNavigateToActionItems
+                )
+            }
+
+            if (report.performanceMetrics != null) {
+                item {
+                    SectionCard(
+                        title = "Performance Metrics",
+                        subtitle = "Build time: ${report.performanceMetrics.buildTimeSeconds}s",
+                        icon = Icons.Default.Speed,
+                        onClick = onNavigateToPerformance
+                    )
+                }
+            }
+
+            item {
+                SectionCard(
+                    title = "Smart Recommendations",
+                    subtitle = "AI-powered insights",
+                    icon = Icons.Default.AutoAwesome,
+                    onClick = onNavigateToRecommendations
+                )
             }
 
             // Footer
