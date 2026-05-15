@@ -230,6 +230,7 @@ private fun ActionItemsOverviewCard(
         ) {
             StatusCountChip(
                 label = "To Do",
+                modifier = Modifier.weight(1f),
                 count = todoCount,
                 icon = Icons.Default.CheckBoxOutlineBlank,
                 isSelected = filterStatus == ActionStatus.TODO,
@@ -237,6 +238,7 @@ private fun ActionItemsOverviewCard(
             )
             StatusCountChip(
                 label = "In Progress",
+                modifier = Modifier.weight(1f),
                 count = inProgressCount,
                 icon = Icons.Default.HourglassEmpty,
                 isSelected = filterStatus == ActionStatus.IN_PROGRESS,
@@ -244,6 +246,7 @@ private fun ActionItemsOverviewCard(
             )
             StatusCountChip(
                 label = "Done",
+                modifier = Modifier.weight(1f),
                 count = doneCount,
                 icon = Icons.Default.CheckBox,
                 isSelected = filterStatus == ActionStatus.DONE,
@@ -259,10 +262,11 @@ private fun StatusCountChip(
     count: Int,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.weight(1f),
+        modifier = modifier,
         onClick = onClick,
         shape = RoundedCornerShape(18.dp),
         color = if (isSelected) {
