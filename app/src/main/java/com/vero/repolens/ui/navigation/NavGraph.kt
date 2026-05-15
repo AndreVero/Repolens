@@ -18,6 +18,7 @@ import com.vero.repolens.ui.screens.ConcurrencyScreen
 import com.vero.repolens.ui.screens.DependencyInjectionScreen
 import com.vero.repolens.ui.screens.FeatureDetailScreen
 import com.vero.repolens.ui.screens.FeaturesScreen
+import com.vero.repolens.ui.screens.IntroScreen
 import com.vero.repolens.ui.screens.ModuleDetailScreen
 import com.vero.repolens.ui.screens.ModulesScreen
 import com.vero.repolens.ui.screens.OverviewScreen
@@ -40,8 +41,19 @@ fun RepoLensNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.OVERVIEW
+        startDestination = NavRoutes.INTRO
     ) {
+        composable(NavRoutes.INTRO) {
+            IntroScreen(
+                onContinue = {
+                    viewModel.loadReport()
+                    navController.navigate(NavRoutes.OVERVIEW) {
+                        popUpTo(NavRoutes.INTRO) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(NavRoutes.OVERVIEW) {
             when (val state = uiState) {
                 is UiState.Loading -> LoadingState()

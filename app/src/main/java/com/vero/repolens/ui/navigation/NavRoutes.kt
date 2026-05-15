@@ -1,6 +1,7 @@
 package com.vero.repolens.ui.navigation
 
 object NavRoutes {
+    const val INTRO = "intro"
     const val OVERVIEW = "overview"
     const val SEARCH = "search"
     const val ARCHITECTURE = "architecture"

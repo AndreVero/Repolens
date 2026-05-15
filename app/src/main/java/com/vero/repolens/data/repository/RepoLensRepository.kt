@@ -1,7 +1,11 @@
 package com.vero.repolens.data.repository
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
+import com.vero.repolens.data.models.AssetReportSource
+import com.vero.repolens.data.models.DeviceReportSource
+import com.vero.repolens.data.models.ReportSource
 import com.vero.repolens.data.models.RepoLensReport
 import com.vero.repolens.data.models.SearchableItem
 import com.vero.repolens.data.models.SearchItemType
@@ -19,23 +23,62 @@ sealed class RepoLensResult {
 class RepoLensRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    companion object {
+        private const val DEFAULT_ASSET_REPORT = "repolens_sample_report.json"
+    }
+
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
         coerceInputValues = true
     }
 
+    private var selectedReportSource: ReportSource? = null
+
+    fun getAvailableAssetReports(): List<AssetReportSource> {
+        return context.assets
+            .list("")
+            .orEmpty()
+            .filter { it.endsWith(".json", ignoreCase = true) }
+            .sorted()
+            .map { AssetReportSource(it) }
+    }
+
+    fun getSelectedReportSource(): ReportSource? = selectedReportSource
+
+    fun setSelectedReportSource(source: ReportSource) {
+        selectedReportSource = source
+    }
+
     suspend fun loadReport(): RepoLensResult {
+        val source = selectedReportSource ?: AssetReportSource(DEFAULT_ASSET_REPORT)
+        return loadReportFromSource(source)
+    }
+
+    suspend fun loadReportFromSource(source: ReportSource): RepoLensResult {
         return try {
-            val jsonString = context.assets.open("repolens_sample_report.json")
-                .bufferedReader()
-                .use { it.readText() }
-            
+            val jsonString = readReportJson(source)
             val report = json.decodeFromString<RepoLensReport>(jsonString)
             RepoLensResult.Success(report)
         } catch (e: Exception) {
-            Log.e("RepoLensRepository", "Failed to load report", e)
+            Log.e("RepoLensRepository", "Failed to load report from ${source.displayName}", e)
             RepoLensResult.Error("Failed to load report. Please check the file and try again.")
+        }
+    }
+
+    private fun readReportJson(source: ReportSource): String {
+        return when (source) {
+            is AssetReportSource -> {
+                context.assets.open(source.assetPath)
+                    .bufferedReader()
+                    .use { it.readText() }
+            }
+            is DeviceReportSource -> {
+                context.contentResolver.openInputStream(source.uri)
+                    ?.bufferedReader()
+                    ?.use { it.readText() }
+                    ?: error("Unable to open selected file.")
+            }
         }
     }
 

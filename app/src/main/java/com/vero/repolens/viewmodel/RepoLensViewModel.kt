@@ -26,10 +26,6 @@ class RepoLensViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    init {
-        loadReport()
-    }
-
     fun loadReport() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
