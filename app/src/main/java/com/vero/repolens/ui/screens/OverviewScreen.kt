@@ -29,12 +29,21 @@ fun OverviewScreen(
     onNavigateToConcurrency: () -> Unit,
     onNavigateToTesting: () -> Unit,
     onNavigateToRisks: () -> Unit,
-    onNavigateToPR: () -> Unit
+    onNavigateToPR: () -> Unit,
+    onNavigateToSearch: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("RepoLens") },
+                actions = {
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer

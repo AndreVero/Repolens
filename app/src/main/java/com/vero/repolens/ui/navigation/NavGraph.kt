@@ -61,9 +61,36 @@ fun RepoLensNavGraph(
                     },
                     onNavigateToPR = {
                         navController.navigate(NavRoutes.PR_READINESS)
+                    },
+                    onNavigateToSearch = {
+                        navController.navigate(NavRoutes.SEARCH)
                     }
                 )
             }
+        composable(NavRoutes.SEARCH) {
+            SearchScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onItemClick = { item ->
+                    // Navigate to appropriate detail screen based on item type
+                    when (item.type) {
+                        com.vero.repolens.data.models.SearchItemType.MODULE -> {
+                            navController.navigate(NavRoutes.moduleDetail(item.id))
+                        }
+                        com.vero.repolens.data.models.SearchItemType.FEATURE -> {
+                            navController.navigate(NavRoutes.featureDetail(item.id))
+                        }
+                        com.vero.repolens.data.models.SearchItemType.RISK -> {
+                            navController.navigate(NavRoutes.RISKS)
+                        }
+                        else -> {
+                            // For other types, navigate to relevant screen
+                            navController.popBackStack()
+                        }
+                    }
+                }
+            )
+        }
+
         }
 
         composable(NavRoutes.ARCHITECTURE) {
