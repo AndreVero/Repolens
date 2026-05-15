@@ -1,168 +1,120 @@
 package com.vero.repolens.ui.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.vero.repolens.data.models.*
-import com.vero.repolens.ui.components.*
+import com.vero.repolens.data.models.Concurrency
+import com.vero.repolens.data.models.DependencyInjection
+import com.vero.repolens.data.models.Dispatcher
+import com.vero.repolens.data.models.ExistingTest
+import com.vero.repolens.data.models.FlowInfo
+import com.vero.repolens.data.models.MissingTestArea
+import com.vero.repolens.data.models.PrReadiness
+import com.vero.repolens.data.models.Risk
+import com.vero.repolens.data.models.Screen
+import com.vero.repolens.data.models.StateManagement
+import com.vero.repolens.data.models.Testing
+import com.vero.repolens.data.models.UiLayer
+import com.vero.repolens.ui.components.FilePathChip
+import com.vero.repolens.ui.components.SeverityBadge
 
-// Testing Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TestingScreen(
     testing: Testing,
     onNavigateBack: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Testing") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    DetailScaffold(title = "Testing", onNavigateBack = onNavigateBack) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    ) {
-                        Text(
-                            text = testing.summary,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        if (testing.frameworks.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = "Frameworks: ${testing.frameworks.joinToString(", ")}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-                }
+                HeroInfoCard(
+                    title = "Testing Health",
+                    summary = testing.summary,
+                    icon = Icons.Default.CheckCircle,
+                    chips = buildList {
+                        if (testing.frameworks.isNotEmpty()) add("${testing.frameworks.size} frameworks")
+                        if (testing.existingTests.isNotEmpty()) add("${testing.existingTests.size} tests")
+                        if (testing.missingTestAreas.isNotEmpty()) add("${testing.missingTestAreas.size} gaps")
+                    },
+                    footer = testing.frameworks.takeIf { it.isNotEmpty() }?.joinToString(", ")
+                )
             }
 
             if (testing.existingTests.isNotEmpty()) {
-                item { SectionHeader(title = "Existing Tests") }
+                item { ScreenSectionTitle("Existing Tests") }
                 items(testing.existingTests) { test ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = test.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = "Type: ${test.type}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            if (test.covers.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Covers: ${test.covers.joinToString(", ")}",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                            if (test.gaps.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Gaps: ${test.gaps.joinToString(", ")}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
+                    ExistingTestCard(test = test)
                 }
             }
 
             if (testing.missingTestAreas.isNotEmpty()) {
-                item { SectionHeader(title = "Missing Test Areas") }
+                item { ScreenSectionTitle("Missing Test Areas") }
                 items(testing.missingTestAreas) { area ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
+                    MissingTestAreaCard(area = area)
+                }
+            }
+
+            if (testing.testabilityConcerns.isNotEmpty()) {
+                item {
+                    DetailSectionCard(title = "Testability Concerns") {
+                        HighlightBulletList(
+                            items = testing.testabilityConcerns,
+                            accent = MaterialTheme.colorScheme.error
                         )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = area.area,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                                SeverityBadge(severity = area.priority)
-                            }
-                            if (area.suggestedTests.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Suggested tests:",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                                area.suggestedTests.forEach { test ->
-                                    Text(
-                                        text = "• $test",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onErrorContainer,
-                                        modifier = Modifier.padding(start = 8.dp, top = 2.dp)
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }
 
             if (testing.recommendations.isNotEmpty()) {
-                item { SectionHeader(title = "Recommendations") }
-                items(testing.recommendations) { rec ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = rec,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp)
+                item {
+                    DetailSectionCard(title = "Recommendations") {
+                        HighlightBulletList(
+                            items = testing.recommendations,
+                            accent = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -171,200 +123,93 @@ fun TestingScreen(
     }
 }
 
-// PR Readiness Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrReadinessScreen(
     prReadiness: PrReadiness,
     onNavigateBack: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("PR Readiness") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    DetailScaffold(title = "PR Readiness", onNavigateBack = onNavigateBack) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "${prReadiness.score}%",
-                            style = MaterialTheme.typography.displayLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Text(
-                            text = "PR Readiness Score",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = prReadiness.summary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                ScoreHeroCard(
+                    score = prReadiness.score,
+                    title = "PR Readiness Score",
+                    summary = prReadiness.summary,
+                    chips = buildList {
+                        if (prReadiness.readyItems.isNotEmpty()) add("${prReadiness.readyItems.size} ready")
+                        if (prReadiness.attentionItems.isNotEmpty()) add("${prReadiness.attentionItems.size} attention")
+                        if (prReadiness.qaChecklist.isNotEmpty()) add("${prReadiness.qaChecklist.size} QA checks")
                     }
-                }
+                )
             }
 
             if (prReadiness.readyItems.isNotEmpty()) {
-                item { SectionHeader(title = "Ready Items") }
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    DetailSectionCard(title = "Ready Items") {
+                        HighlightBulletList(
+                            items = prReadiness.readyItems,
+                            accent = MaterialTheme.colorScheme.primary
                         )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            prReadiness.readyItems.forEach { item ->
-                                Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = item,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }
 
             if (prReadiness.attentionItems.isNotEmpty()) {
-                item { SectionHeader(title = "Needs Attention") }
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
+                    DetailSectionCard(title = "Needs Attention") {
+                        HighlightBulletList(
+                            items = prReadiness.attentionItems,
+                            accent = MaterialTheme.colorScheme.error
                         )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            prReadiness.attentionItems.forEach { item ->
-                                Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                                    Icon(
-                                        imageVector = Icons.Default.Warning,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onErrorContainer
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = item,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }
 
-            if (prReadiness.suggestedPrDescription != null) {
-                item { SectionHeader(title = "Suggested PR Description") }
+            prReadiness.suggestedPrDescription?.let { description ->
                 item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    DetailSectionCard(title = "Suggested PR Description") {
                         Text(
-                            text = prReadiness.suggestedPrDescription,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp)
+                            text = description,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
             }
 
             if (prReadiness.qaChecklist.isNotEmpty()) {
-                item { SectionHeader(title = "QA Checklist") }
                 item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            prReadiness.qaChecklist.forEach { item ->
-                                Text(
-                                    text = "☐ $item",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                )
-                            }
-                        }
+                    DetailSectionCard(title = "QA Checklist") {
+                        ChecklistList(items = prReadiness.qaChecklist)
                     }
                 }
             }
 
             if (prReadiness.reviewerNotes.isNotEmpty()) {
-                item { SectionHeader(title = "Reviewer Notes") }
-                items(prReadiness.reviewerNotes) { note ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = note,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp)
+                item {
+                    DetailSectionCard(title = "Reviewer Notes") {
+                        HighlightBulletList(
+                            items = prReadiness.reviewerNotes,
+                            accent = MaterialTheme.colorScheme.secondary
                         )
                     }
                 }
             }
 
             if (prReadiness.rollbackPlan.isNotEmpty()) {
-                item { SectionHeader(title = "Rollback Plan") }
                 item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            prReadiness.rollbackPlan.forEach { step ->
-                                Text(
-                                    text = "• $step",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(vertical = 2.dp)
-                                )
-                            }
-                        }
+                    DetailSectionCard(title = "Rollback Plan") {
+                        HighlightBulletList(
+                            items = prReadiness.rollbackPlan,
+                            accent = MaterialTheme.colorScheme.tertiary
+                        )
                     }
                 }
             }
@@ -372,75 +217,42 @@ fun PrReadinessScreen(
     }
 }
 
-// Dependency Injection Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DependencyInjectionScreen(
     di: DependencyInjection,
     onNavigateBack: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Dependency Injection") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    DetailScaffold(title = "Dependency Injection", onNavigateBack = onNavigateBack) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                InfoCard(
+                HeroInfoCard(
                     title = di.framework,
-                    content = di.summary,
-                    icon = Icons.Default.Link
+                    summary = di.summary,
+                    icon = Icons.Default.Link,
+                    chips = buildList {
+                        if (di.modules.isNotEmpty()) add("${di.modules.size} modules")
+                        if (di.risks.isNotEmpty()) add("${di.risks.size} risks")
+                    }
                 )
             }
 
             if (di.modules.isNotEmpty()) {
-                item { SectionHeader(title = "DI Modules") }
+                item { ScreenSectionTitle("DI Modules") }
                 items(di.modules) { module ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = module.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            if (module.scope != null) {
-                                Text(
-                                    text = "Scope: ${module.scope}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                    DetailSectionCard(title = module.name) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            module.scope?.let {
+                                DetailChip("Scope: $it")
                             }
                             if (module.provides.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Provides:",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                module.provides.forEach { provided ->
-                                    Text(
-                                        text = "• $provided",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        modifier = Modifier.padding(start = 8.dp, top = 2.dp)
-                                    )
-                                }
+                                FeatureLikeTagCloud(module.provides)
                             }
                         }
                     }
@@ -448,132 +260,88 @@ fun DependencyInjectionScreen(
             }
 
             if (di.risks.isNotEmpty()) {
-                item { SectionHeader(title = "Risks") }
+                item { ScreenSectionTitle("Risks") }
                 items(di.risks) { risk ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = risk.title,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onErrorContainer
-                            )
-                            if (risk.recommendation != null) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = risk.recommendation,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                )
-                            }
-                        }
-                    }
+                    RiskInsightCard(risk = risk)
                 }
             }
         }
     }
 }
 
-// Concurrency Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConcurrencyScreen(
     concurrency: Concurrency,
     onNavigateBack: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Concurrency") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    DetailScaffold(title = "Concurrency", onNavigateBack = onNavigateBack) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                InfoCard(
+                HeroInfoCard(
                     title = "Technologies",
-                    content = concurrency.technologies.joinToString(", "),
-                    icon = Icons.Default.Sync
+                    summary = concurrency.summary,
+                    icon = Icons.Default.Sync,
+                    chips = concurrency.technologies
                 )
             }
 
-            item {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = concurrency.summary,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            }
-
             if (concurrency.dispatchers.isNotEmpty()) {
-                item { SectionHeader(title = "Dispatchers") }
+                item { ScreenSectionTitle("Dispatchers") }
                 items(concurrency.dispatchers) { dispatcher ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = dispatcher.name,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = dispatcher.usage,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
+                    DispatcherCard(dispatcher = dispatcher)
                 }
             }
 
             if (concurrency.flows.isNotEmpty()) {
-                item { SectionHeader(title = "Flows") }
+                item { ScreenSectionTitle("Flows") }
                 items(concurrency.flows) { flow ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = flow.name,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = "Type: ${flow.type}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            if (flow.purpose != null) {
-                                Text(
-                                    text = flow.purpose,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
+                    FlowInfoCard(flow = flow)
+                }
+            }
+
+            if (concurrency.backgroundWork.isNotEmpty()) {
+                item {
+                    DetailSectionCard(title = "Background Work") {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            concurrency.backgroundWork.forEach { work ->
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f),
+                                    shape = MaterialTheme.shapes.large
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(14.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(
+                                            text = work.name,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        work.framework?.let {
+                                            Text(
+                                                text = it,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                        work.purpose?.let {
+                                            Text(
+                                                text = it,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -581,14 +349,128 @@ fun ConcurrencyScreen(
             }
 
             if (concurrency.recommendations.isNotEmpty()) {
-                item { SectionHeader(title = "Recommendations") }
-                items(concurrency.recommendations) { rec ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = rec,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp)
+                item {
+                    DetailSectionCard(title = "Recommendations") {
+                        HighlightBulletList(
+                            items = concurrency.recommendations,
+                            accent = MaterialTheme.colorScheme.primary
                         )
+                    }
+                }
+            }
+
+            if (concurrency.risks.isNotEmpty()) {
+                item { ScreenSectionTitle("Risks") }
+                items(concurrency.risks) { risk ->
+                    RiskInsightCard(risk = risk)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UiLayerScreen(
+    uiLayer: UiLayer,
+    onNavigateBack: () -> Unit
+) {
+    DetailScaffold(title = "UI Layer", onNavigateBack = onNavigateBack) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                HeroInfoCard(
+                    title = uiLayer.framework,
+                    summary = uiLayer.summary,
+                    icon = Icons.Default.Smartphone,
+                    chips = buildList {
+                        if (uiLayer.screens.isNotEmpty()) add("${uiLayer.screens.size} screens")
+                        uiLayer.navigation?.routes?.takeIf { it.isNotEmpty() }?.let { add("${it.size} routes") }
+                        uiLayer.recompositionRisks.takeIf { it.isNotEmpty() }?.let { add("${it.size} risks") }
+                    }
+                )
+            }
+
+            if (uiLayer.screens.isNotEmpty()) {
+                item { ScreenSectionTitle("Screens (${uiLayer.screens.size})") }
+                items(uiLayer.screens) { screen ->
+                    UiScreenCard(screen = screen)
+                }
+            }
+
+            uiLayer.stateManagement?.let { stateManagement ->
+                item {
+                    StateManagementCard(stateManagement = stateManagement)
+                }
+            }
+
+            if (uiLayer.navigation?.routes?.isNotEmpty() == true) {
+                item {
+                    DetailSectionCard(title = "Navigation") {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            uiLayer.navigation.routes.forEach { route ->
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f),
+                                    shape = MaterialTheme.shapes.large
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(14.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(
+                                            text = route.route,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        route.screen?.let {
+                                            Text(
+                                                text = it,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                        if (route.arguments.isNotEmpty()) {
+                                            FeatureLikeTagCloud(route.arguments)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (uiLayer.recompositionRisks.isNotEmpty()) {
+                item { ScreenSectionTitle("Recomposition Risks") }
+                items(uiLayer.recompositionRisks) { risk ->
+                    DetailSectionCard(title = risk.title) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            if (risk.affectedFiles.isNotEmpty()) {
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    risk.affectedFiles.forEach { file ->
+                                        FilePathChip(path = file)
+                                    }
+                                }
+                            }
+                            risk.recommendation?.let {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -596,106 +478,549 @@ fun ConcurrencyScreen(
     }
 }
 
-// UI Layer Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UiLayerScreen(
-    uiLayer: UiLayer,
-    onNavigateBack: () -> Unit
+private fun DetailScaffold(
+    title: String,
+    onNavigateBack: () -> Unit,
+    content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("UI Layer") },
+                title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        },
+        content = content
+    )
+}
+
+@Composable
+private fun HeroInfoCard(
+    title: String,
+    summary: String,
+    icon: ImageVector,
+    chips: List<String> = emptyList(),
+    footer: String? = null
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.92f)
+        ),
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Surface(
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.58f),
+                    shape = MaterialTheme.shapes.large
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = summary,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+            if (chips.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    chips.forEach { chip ->
+                        DetailChip(chip)
                     }
                 }
-            )
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                InfoCard(
-                    title = uiLayer.framework,
-                    content = uiLayer.summary,
-                    icon = Icons.Default.Smartphone
+            }
+            footer?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f)
                 )
             }
+        }
+    }
+}
 
-            if (uiLayer.screens.isNotEmpty()) {
-                item { SectionHeader(title = "Screens (${uiLayer.screens.size})") }
-                items(uiLayer.screens) { screen ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = screen.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            if (screen.route != null) {
-                                Text(
-                                    text = "Route: ${screen.route}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            if (screen.stateSource != null) {
-                                Text(
-                                    text = "State: ${screen.stateSource}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
+@Composable
+private fun ScoreHeroCard(
+    score: Int,
+    title: String,
+    summary: String,
+    chips: List<String>
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.92f)
+        ),
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text(
+                text = "$score%",
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Text(
+                text = summary,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                chips.forEach { chip ->
+                    DetailChip(chip)
                 }
             }
+        }
+    }
+}
 
-            if (uiLayer.stateManagement != null && uiLayer.stateManagement.stateClasses.isNotEmpty()) {
-                item { SectionHeader(title = "State Management") }
-                item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            if (uiLayer.stateManagement.pattern != null) {
-                                Text(
-                                    text = "Pattern: ${uiLayer.stateManagement.pattern}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                            Text(
-                                text = "State Classes:",
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                            uiLayer.stateManagement.stateClasses.forEach { stateClass ->
-                                Text(
-                                    text = "• $stateClass",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.padding(start = 8.dp, top = 2.dp)
-                                )
-                            }
-                        }
+@Composable
+private fun ScreenSectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onBackground
+    )
+}
+
+@Composable
+private fun DetailSectionCard(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.24f)),
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            content()
+        }
+    }
+}
+
+@Composable
+private fun ExistingTestCard(test: ExistingTest) {
+    DetailSectionCard(title = test.name) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DetailChip("Type: ${test.type}")
+                test.path?.let { DetailChip(it) }
+            }
+            if (test.covers.isNotEmpty()) {
+                InfoSurface("Covers", test.covers, MaterialTheme.colorScheme.primary)
+            }
+            if (test.gaps.isNotEmpty()) {
+                InfoSurface("Gaps", test.gaps, MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MissingTestAreaCard(area: MissingTestArea) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.92f)
+        ),
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = area.area,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.weight(1f)
+                )
+                SeverityBadge(severity = area.priority)
+            }
+            if (area.suggestedTests.isNotEmpty()) {
+                HighlightBulletList(
+                    items = area.suggestedTests,
+                    accent = MaterialTheme.colorScheme.onErrorContainer,
+                    textColor = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DispatcherCard(dispatcher: Dispatcher) {
+    DetailSectionCard(title = dispatcher.name) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                text = dispatcher.usage,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (dispatcher.relatedFiles.isNotEmpty()) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    dispatcher.relatedFiles.forEach { file ->
+                        FilePathChip(path = file)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun FlowInfoCard(flow: FlowInfo) {
+    DetailSectionCard(title = flow.name) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DetailChip(flow.type)
+                flow.owner?.let { DetailChip("Owner: $it") }
+            }
+            flow.purpose?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            if (flow.risks.isNotEmpty()) {
+                InfoSurface("Risks", flow.risks, MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+}
+
+@Composable
+private fun UiScreenCard(screen: Screen) {
+    DetailSectionCard(title = screen.name) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                screen.route?.let { DetailChip("Route: $it") }
+                screen.stateSource?.let { DetailChip("State: $it") }
+                screen.uiState?.let { DetailChip(it) }
+            }
+            if (screen.reusableComponents.isNotEmpty()) {
+                FeatureLikeTagCloud(screen.reusableComponents)
+            }
+            if (screen.userActions.isNotEmpty()) {
+                InfoSurface("User Actions", screen.userActions, MaterialTheme.colorScheme.primary)
+            }
+            if (screen.risks.isNotEmpty()) {
+                InfoSurface("Risks", screen.risks, MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+}
+
+@Composable
+private fun StateManagementCard(stateManagement: StateManagement) {
+    DetailSectionCard(title = "State Management") {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            stateManagement.pattern?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            if (stateManagement.stateClasses.isNotEmpty()) {
+                FeatureLikeTagCloud(stateManagement.stateClasses)
+            }
+            if (stateManagement.sideEffectHandling.isNotEmpty()) {
+                InfoSurface(
+                    title = "Side Effects",
+                    items = stateManagement.sideEffectHandling,
+                    accent = MaterialTheme.colorScheme.secondary
+                )
+            }
+            if (stateManagement.risks.isNotEmpty()) {
+                InfoSurface(
+                    title = "Risks",
+                    items = stateManagement.risks,
+                    accent = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RiskInsightCard(risk: Risk) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.92f)
+        ),
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = risk.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            text = risk.category.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.78f)
+                        )
+                    }
+                }
+                SeverityBadge(severity = risk.severity)
+            }
+            risk.whyItMatters?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            risk.recommendation?.let {
+                Surface(
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
+                    shape = MaterialTheme.shapes.large
+                ) {
+                    Text(
+                        text = it,
+                        modifier = Modifier.padding(12.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InfoSurface(
+    title: String,
+    items: List<String>,
+    accent: Color
+) {
+    Surface(
+        color = accent.copy(alpha = 0.08f),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = accent
+            )
+            items.forEach { item ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = accent
+                    )
+                    Text(
+                        text = item,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HighlightBulletList(
+    items: List<String>,
+    accent: Color,
+    textColor: Color = MaterialTheme.colorScheme.onSurface
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        items.forEach { item ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = "•",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = accent
+                )
+                Text(
+                    text = item,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = textColor,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChecklistList(items: List<String>) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        items.forEach { item ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = "[]",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = item,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeatureLikeTagCloud(items: List<String>) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items.forEach { item ->
+            DetailChip(item)
+        }
+    }
+}
+
+@Composable
+private fun DetailChip(text: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.52f),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
