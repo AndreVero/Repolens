@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -150,6 +151,9 @@ private val OffsetSaver = listSaver<Offset, Float>(
         )
     }
 )
+
+private const val MinVisualizerZoom = 0.50f
+private const val MaxVisualizerZoom = 2.1f
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -422,7 +426,7 @@ private fun FeatureGraphCard(
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(560.dp)
+                    .height(640.dp)
                     .clip(MaterialTheme.shapes.extraLarge)
                     .background(
                         Brush.radialGradient(
@@ -437,8 +441,8 @@ private fun FeatureGraphCard(
                 val density = LocalDensity.current
                 val viewportWidthPx = with(density) { maxWidth.toPx() }
                 val viewportHeightPx = with(density) { maxHeight.toPx() }
-                val graphWidthPx = max(viewportWidthPx * 1.8f, viewportWidthPx + 320f)
-                val graphHeightPx = max(viewportHeightPx * 1.4f, viewportHeightPx + 220f)
+                val graphWidthPx = max(viewportWidthPx * 2.0f, viewportWidthPx + 420f)
+                val graphHeightPx = max(viewportHeightPx * 1.6f, viewportHeightPx + 300f)
                 val scaledGraphWidthPx = graphWidthPx * zoomScale
                 val scaledGraphHeightPx = graphHeightPx * zoomScale
                 val maxPanX = max(0f, (scaledGraphWidthPx - viewportWidthPx) / 2f)
@@ -471,7 +475,11 @@ private fun FeatureGraphCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .requiredSize(
+                                width = with(density) { graphWidthPx.toDp() },
+                                height = with(density) { graphHeightPx.toDp() }
+                            )
+                            .align(Alignment.Center)
                             .graphicsLayer {
                                 translationX = clampedPanOffset.x
                                 translationY = clampedPanOffset.y
@@ -540,14 +548,14 @@ private fun FeatureGraphCard(
                     ZoomControls(
                         zoomScale = zoomScale,
                         onZoomIn = {
-                            zoomScale = (zoomScale + 0.15f).coerceAtMost(2.1f)
+                            zoomScale = (zoomScale + 0.15f).coerceAtMost(MaxVisualizerZoom)
                         },
-                        onZoomOut = {
-                            zoomScale = (zoomScale - 0.15f).coerceAtLeast(0.85f)
-                            panOffset = Offset(
-                                x = panOffset.x.coerceIn(-maxPanX, maxPanX),
-                                y = panOffset.y.coerceIn(-maxPanY, maxPanY)
-                            )
+                    onZoomOut = {
+                        zoomScale = (zoomScale - 0.15f).coerceAtLeast(MinVisualizerZoom)
+                        panOffset = Offset(
+                            x = panOffset.x.coerceIn(-maxPanX, maxPanX),
+                            y = panOffset.y.coerceIn(-maxPanY, maxPanY)
+                        )
                         },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
@@ -1270,19 +1278,62 @@ private fun computeGraphPositions(
     heightPx: Float
 ): Map<String, Offset> {
     val center = Offset(widthPx / 2f, heightPx / 2f)
-    val ringOne = min(widthPx, heightPx) * 0.27f
-    val ringTwo = min(widthPx, heightPx) * 0.42f
-    val ringThree = min(widthPx, heightPx) * 0.56f
+    val horizontalSafeRadius = (widthPx / 2f) - 120f
+    val verticalSafeRadius = (heightPx / 2f) - 92f
+    val baseRadius = min(horizontalSafeRadius, verticalSafeRadius).coerceAtLeast(120f)
+    val ringOne = baseRadius * 0.46f
+    val ringTwo = baseRadius * 0.72f
+    val ringThree = baseRadius * 0.92f
 
     val groups = nodes.groupBy { it.type }
     val positions = mutableMapOf<String, Offset>()
     groups[VisualizerNodeType.FEATURE]?.firstOrNull()?.let { positions[it.id] = center }
 
-    placeSector(groups[VisualizerNodeType.MODULE].orEmpty(), 190f, 310f, ringOne, center, positions)
-    placeSector(groups[VisualizerNodeType.LAYER].orEmpty(), 320f, 40f, ringOne, center, positions)
-    placeSector(groups[VisualizerNodeType.FILE].orEmpty(), 115f, 240f, ringTwo, center, positions)
-    placeSector(groups[VisualizerNodeType.TEST].orEmpty(), 10f, 110f, ringTwo, center, positions)
-    placeSector(groups[VisualizerNodeType.RISK].orEmpty(), 110f, 430f, ringThree, center, positions)
+    placeSector(
+        nodes = groups[VisualizerNodeType.MODULE].orEmpty(),
+        startAngle = 190f,
+        endAngle = 310f,
+        radiusX = ringOne,
+        radiusY = ringOne * 0.82f,
+        center = center,
+        positions = positions
+    )
+    placeSector(
+        nodes = groups[VisualizerNodeType.LAYER].orEmpty(),
+        startAngle = 320f,
+        endAngle = 40f,
+        radiusX = ringOne,
+        radiusY = ringOne * 0.78f,
+        center = center,
+        positions = positions
+    )
+    placeSector(
+        nodes = groups[VisualizerNodeType.FILE].orEmpty(),
+        startAngle = 115f,
+        endAngle = 240f,
+        radiusX = ringTwo,
+        radiusY = ringTwo * 0.88f,
+        center = center,
+        positions = positions
+    )
+    placeSector(
+        nodes = groups[VisualizerNodeType.TEST].orEmpty(),
+        startAngle = 10f,
+        endAngle = 110f,
+        radiusX = ringTwo,
+        radiusY = ringTwo * 0.84f,
+        center = center,
+        positions = positions
+    )
+    placeSector(
+        nodes = groups[VisualizerNodeType.RISK].orEmpty(),
+        startAngle = 110f,
+        endAngle = 430f,
+        radiusX = ringThree,
+        radiusY = ringThree * 0.92f,
+        center = center,
+        positions = positions
+    )
 
     return positions
 }
@@ -1291,7 +1342,8 @@ private fun placeSector(
     nodes: List<VisualizerNode>,
     startAngle: Float,
     endAngle: Float,
-    radius: Float,
+    radiusX: Float,
+    radiusY: Float,
     center: Offset,
     positions: MutableMap<String, Offset>
 ) {
@@ -1304,8 +1356,8 @@ private fun placeSector(
         val angle = startAngle + (index * step)
         val radians = angle / 180f * PI.toFloat()
         positions[node.id] = Offset(
-            x = center.x + cos(radians) * radius,
-            y = center.y + sin(radians) * radius
+            x = center.x + cos(radians) * radiusX,
+            y = center.y + sin(radians) * radiusY
         )
     }
 }

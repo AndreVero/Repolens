@@ -93,10 +93,6 @@ fun FeatureDetailScreen(
                 )
             }
 
-            item {
-                FeatureOverviewStrip(feature = feature)
-            }
-
             if (feature.entryPoints.isNotEmpty()) {
                 item {
                     FeatureSectionCard(title = "Entry Points") {
@@ -330,7 +326,10 @@ private fun FeatureHeroCard(
                         }
                     }
                 }
-                SeverityBadge(severity = feature.riskLevel)
+                SeverityBadge(
+                    severity = feature.riskLevel,
+                    label = "Risk"
+                )
             }
 
             Text(
@@ -354,55 +353,10 @@ private fun FeatureHeroCard(
                     )
                 }
 
-                if (feature.navigationRoutes.isNotEmpty() || feature.analyticsEvents.isNotEmpty()) {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        if (feature.navigationRoutes.isNotEmpty()) {
-                            DetailChip("${feature.navigationRoutes.size} routes")
-                        }
-                        if (feature.analyticsEvents.isNotEmpty()) {
-                            DetailChip("${feature.analyticsEvents.size} analytics")
-                        }
-                    }
-                }
             }
 
             Button(onClick = onOpenVisualizer) {
                 Text("Open Visualizer")
-            }
-        }
-    }
-}
-
-@Composable
-private fun FeatureOverviewStrip(feature: Feature) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.28f)),
-        shape = MaterialTheme.shapes.extraLarge
-    ) {
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            DetailChip("${feature.entryPoints.size} entries")
-            DetailChip("${feature.coreFiles.size} files")
-            DetailChip("${feature.existingTests.size} tests")
-            if (feature.missingTests.isNotEmpty()) {
-                DetailChip("${feature.missingTests.size} missing")
-            }
-            if (feature.viewModels.isNotEmpty()) {
-                DetailChip("${feature.viewModels.size} viewmodels")
-            }
-            if (feature.useCases.isNotEmpty()) {
-                DetailChip("${feature.useCases.size} use cases")
             }
         }
     }

@@ -37,7 +37,6 @@ import com.vero.repolens.data.models.Feature
 import com.vero.repolens.ui.components.ComplexityBadge
 import com.vero.repolens.ui.components.ConfidenceBadge
 import com.vero.repolens.ui.components.EmptyState
-import com.vero.repolens.ui.components.SeverityBadge
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -188,10 +187,6 @@ private fun FeatureCard(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    SeverityBadge(
-                        severity = feature.riskLevel,
-                        label = "Risk"
-                    )
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
@@ -220,50 +215,8 @@ private fun FeatureCard(
                     confidence = feature.confidence,
                     label = "Confidence"
                 )
-                if (feature.viewModels.isNotEmpty()) {
-                    FeatureInfoChip("${feature.viewModels.size} ViewModels")
-                }
-                if (feature.useCases.isNotEmpty()) {
-                    FeatureInfoChip("${feature.useCases.size} use cases")
-                }
-                if (feature.repositories.isNotEmpty()) {
-                    FeatureInfoChip("${feature.repositories.size} repositories")
-                }
             }
 
-            if (feature.missingTests.isNotEmpty() || feature.entryPoints.isNotEmpty()) {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f)
-                    ),
-                    shape = MaterialTheme.shapes.large
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        if (feature.missingTests.isNotEmpty()) {
-                            Text(
-                                text = "${feature.missingTests.size} missing tests",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        if (feature.entryPoints.isNotEmpty()) {
-                            Text(
-                                text = "Entry points: ${feature.entryPoints.take(2).joinToString()}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
         }
     }
 }
