@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vero.repolens.data.models.SearchFilter
 import com.vero.repolens.data.models.SearchableItem
 import com.vero.repolens.data.models.SearchItemType
 import com.vero.repolens.ui.components.LoadingState

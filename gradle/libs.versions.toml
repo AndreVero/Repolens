@@ -14,7 +14,7 @@ hiltNavigationCompose = "1.2.0"
 navigationCompose = "2.8.0"
 lifecycleViewmodelCompose = "2.8.0"
 kotlinxSerializationJson = "1.7.1"
-room = "2.6.1"
+room = "2.8.4"
 itext = "7.2.5"
 
 [libraries]
