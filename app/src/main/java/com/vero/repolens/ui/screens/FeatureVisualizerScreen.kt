@@ -6,7 +6,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -464,12 +466,18 @@ private fun FeatureGraphCard(
                     modifier = Modifier
                         .fillMaxSize()
                         .pointerInput(graphWidthPx, graphHeightPx) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                panOffset = Offset(
-                                    x = (panOffset.x + dragAmount.x).coerceIn(-maxPanX, maxPanX),
-                                    y = (panOffset.y + dragAmount.y).coerceIn(-maxPanY, maxPanY)
-                                )
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                drag(down.id) { change ->
+                                    val dragAmount = change.position - change.previousPosition
+                                    if (dragAmount != Offset.Zero) {
+                                        change.consume()
+                                        panOffset = Offset(
+                                            x = (panOffset.x + dragAmount.x).coerceIn(-maxPanX, maxPanX),
+                                            y = (panOffset.y + dragAmount.y).coerceIn(-maxPanY, maxPanY)
+                                        )
+                                    }
+                                }
                             }
                         }
                 ) {

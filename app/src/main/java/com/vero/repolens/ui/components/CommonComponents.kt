@@ -1,5 +1,6 @@
 package com.vero.repolens.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -120,26 +121,19 @@ fun SeverityBadge(
     modifier: Modifier = Modifier
 ) {
     val (color, textColor) = when (severity.lowercase()) {
-        "critical" -> MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.onError
-        "high" -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
-        "medium" -> Color(0xFFFF9800) to Color.White
-        "low" -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+        "critical" -> MaterialTheme.colorScheme.error.copy(alpha = 0.16f) to MaterialTheme.colorScheme.error
+        "high" -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.34f) to MaterialTheme.colorScheme.onErrorContainer
+        "medium" -> Color(0xFFFF9800).copy(alpha = 0.16f) to Color(0xFFB56A00)
+        "low" -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.32f) to MaterialTheme.colorScheme.onTertiaryContainer
         else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
     }
-    
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(4.dp),
-        color = color
-    ) {
-        Text(
-            text = label?.let { "$it: ${severity.uppercase()}" } ?: severity.uppercase(),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        )
-    }
+
+    BadgePill(
+        text = label?.let { "$it: ${severity.uppercase()}" } ?: severity.uppercase(),
+        containerColor = color,
+        contentColor = textColor,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -149,25 +143,18 @@ fun ComplexityBadge(
     modifier: Modifier = Modifier
 ) {
     val (color, textColor) = when (complexity.lowercase()) {
-        "high" -> Color(0xFFE91E63) to Color.White
-        "medium" -> Color(0xFF2196F3) to Color.White
-        "low" -> Color(0xFF4CAF50) to Color.White
+        "high" -> Color(0xFFE91E63).copy(alpha = 0.16f) to Color(0xFFB01855)
+        "medium" -> Color(0xFF2196F3).copy(alpha = 0.16f) to Color(0xFF1565C0)
+        "low" -> Color(0xFF4CAF50).copy(alpha = 0.16f) to Color(0xFF2E7D32)
         else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
     }
-    
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(4.dp),
-        color = color
-    ) {
-        Text(
-            text = label?.let { "$it: ${complexity.uppercase()}" } ?: complexity.uppercase(),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        )
-    }
+
+    BadgePill(
+        text = label?.let { "$it: ${complexity.uppercase()}" } ?: complexity.uppercase(),
+        containerColor = color,
+        contentColor = textColor,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -178,24 +165,17 @@ fun ConfidenceBadge(
 ) {
     val percentage = (confidence * 100).toInt()
     val (color, textColor) = when {
-        confidence >= 0.8 -> Color(0xFF4CAF50) to Color.White
-        confidence >= 0.6 -> Color(0xFF2196F3) to Color.White
-        else -> Color(0xFFFF9800) to Color.White
+        confidence >= 0.8 -> Color(0xFF4CAF50).copy(alpha = 0.16f) to Color(0xFF2E7D32)
+        confidence >= 0.6 -> Color(0xFF2196F3).copy(alpha = 0.16f) to Color(0xFF1565C0)
+        else -> Color(0xFFFF9800).copy(alpha = 0.16f) to Color(0xFFB56A00)
     }
-    
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(4.dp),
-        color = color
-    ) {
-        Text(
-            text = label?.let { "$it: $percentage%" } ?: "$percentage% CONFIDENCE",
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        )
-    }
+
+    BadgePill(
+        text = label?.let { "$it: $percentage%" } ?: "$percentage% CONFIDENCE",
+        containerColor = color,
+        contentColor = textColor,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -203,28 +183,64 @@ fun FilePathChip(
     path: String,
     modifier: Modifier = Modifier
 ) {
+    val containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.34f)
+    val contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer
+        shape = RoundedCornerShape(999.dp),
+        color = containerColor,
+        border = BorderStroke(1.dp, contentColor.copy(alpha = 0.16f))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Description,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(contentColor, RoundedCornerShape(999.dp))
             )
-            Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = path,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                style = MaterialTheme.typography.labelLarge,
+                color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun BadgePill(
+    text: String,
+    containerColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(999.dp),
+        color = containerColor,
+        border = BorderStroke(1.dp, contentColor.copy(alpha = 0.16f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(contentColor, RoundedCornerShape(999.dp))
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = contentColor
             )
         }
     }

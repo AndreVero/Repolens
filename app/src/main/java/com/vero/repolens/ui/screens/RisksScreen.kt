@@ -332,17 +332,28 @@ private fun RiskInfoChip(
     accent: Color = MaterialTheme.colorScheme.primary
 ) {
     Surface(
-        color = accent.copy(alpha = 0.12f),
-        shape = MaterialTheme.shapes.large
+        color = accent.copy(alpha = 0.14f),
+        shape = MaterialTheme.shapes.extraLarge,
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.16f))
     ) {
-        Text(
-            text = text,
+        Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.labelLarge,
-            color = accent,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(10.dp),
+                shape = MaterialTheme.shapes.small,
+                color = accent
+            ) {}
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                color = accent,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 

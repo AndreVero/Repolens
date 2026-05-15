@@ -292,14 +292,25 @@ private fun ModuleMetaChip(
     Surface(
         modifier = modifier,
         color = containerColor,
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.extraLarge,
+        border = BorderStroke(1.dp, contentColor.copy(alpha = 0.14f))
     ) {
-        Text(
-            text = text,
+        Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.labelLarge,
-            color = contentColor
-        )
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(10.dp),
+                shape = MaterialTheme.shapes.small,
+                color = contentColor
+            ) {}
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                color = contentColor
+            )
+        }
     }
 }
 
