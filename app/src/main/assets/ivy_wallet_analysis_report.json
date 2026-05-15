@@ -1,0 +1,1184 @@
+{
+  "metadata": {
+    "schemaVersion": "1.0",
+    "generatedBy": "RepoLens AI Analyzer",
+    "generatedAt": "2026-05-15T18:37:00Z",
+    "analysisType": "full_repository_analysis",
+    "confidence": 0.92,
+    "notes": [
+      "Analysis of Ivy Wallet - Open source money management Android app",
+      "Project is no longer actively maintained as of Nov 5th, 2024",
+      "Comprehensive modular architecture with 23 feature modules",
+      "Strong testing infrastructure with unit, integration, and screenshot tests"
+    ]
+  },
+  "repository": {
+    "name": "Ivy Wallet",
+    "summary": "Free and open-source money management Android app written in 100% Kotlin and Jetpack Compose. Helps users track personal finances with excellent UI/UX and simplicity. Features include transaction tracking, budgets, accounts, categories, reports, and more.",
+    "mainLanguage": "Kotlin",
+    "platform": "Android",
+    "projectType": "mobile_app",
+    "architectureStyle": "Clean Architecture with Multi-Module Design",
+    "frameworks": [
+      "Jetpack Compose",
+      "Kotlin Coroutines",
+      "Kotlin Flow",
+      "Hilt (DI)",
+      "Room Database",
+      "Ktor Client",
+      "ArrowKt",
+      "Material3",
+      "DataStore",
+      "WorkManager"
+    ],
+    "buildSystem": "Gradle (Kotlin DSL)",
+    "packageName": "com.ivy.wallet",
+    "repositoryRoot": "C:/Users/andri/temp/ivy-wallet",
+    "importantDirectories": [
+      "app",
+      "feature",
+      "shared/base",
+      "shared/data/core",
+      "shared/domain",
+      "shared/ui/core",
+      "widget",
+      "buildSrc"
+    ]
+  },
+  "metrics": {
+    "modulesCount": 41,
+    "featuresCount": 23,
+    "screensCount": 35,
+    "viewModelsCount": 23,
+    "repositoriesCount": 8,
+    "useCasesCount": 45,
+    "existingTestsCount": 150,
+    "missingTestsCount": 85,
+    "highRiskAreasCount": 12,
+    "criticalRiskAreasCount": 4,
+    "prReadinessScore": 78,
+    "architectureConfidenceScore": 88
+  },
+  "architecture": {
+    "style": "Clean Architecture with Multi-Module Design",
+    "summary": "Ivy Wallet implements clean architecture with 41 Gradle modules organized into feature modules (23), shared modules (base, data, domain, UI), and widget modules. Each feature is self-contained with clear dependency boundaries. The architecture follows SOLID principles with dependency inversion through Hilt.",
+    "layers": [
+      {
+        "id": "presentation",
+        "name": "Presentation Layer",
+        "responsibility": "100% Jetpack Compose UI, ViewModels with StateFlow, navigation, and user interaction handling.",
+        "commonPatterns": [
+          "MVVM with Compose",
+          "Unidirectional data flow",
+          "State hoisting",
+          "@HiltViewModel injection",
+          "viewModelScope for coroutines"
+        ],
+        "relatedFiles": [
+          "feature/*/src/main/java/**/*Screen.kt",
+          "feature/*/src/main/java/**/*ViewModel.kt",
+          "shared/ui/core/**/*.kt"
+        ],
+        "risks": [
+          "Some ViewModels have @SuppressLint('StaticFieldLeak') warnings",
+          "Complex state management in HomeViewModel and BudgetViewModel"
+        ]
+      },
+      {
+        "id": "domain",
+        "name": "Domain Layer",
+        "responsibility": "Business logic through use cases, domain models, and repository interfaces. Framework-independent.",
+        "commonPatterns": [
+          "Use Case pattern",
+          "Repository interfaces",
+          "ArrowKt for functional programming",
+          "Immutable domain models",
+          "Suspend functions for async operations"
+        ],
+        "relatedFiles": [
+          "shared/domain/src/main/java/com/ivy/domain/usecase/**/*.kt",
+          "shared/data/model/**/*.kt"
+        ],
+        "risks": [
+          "Legacy code marked @Deprecated needs refactoring",
+          "Some use cases have complex business logic"
+        ]
+      },
+      {
+        "id": "data",
+        "name": "Data Layer",
+        "responsibility": "Room database for local persistence, Ktor for network calls, DataStore for preferences, repository implementations.",
+        "commonPatterns": [
+          "Repository pattern implementation",
+          "Entity-Domain mappers",
+          "Room DAOs with Flow",
+          "Ktor HTTP client",
+          "DataStore for key-value storage"
+        ],
+        "relatedFiles": [
+          "shared/data/core/src/main/java/com/ivy/data/db/*.kt",
+          "shared/data/core/src/main/java/com/ivy/data/repository/**/*.kt"
+        ],
+        "risks": [
+          "Database migrations are critical and complex",
+          "Mapper validation logic needs careful testing"
+        ]
+      },
+      {
+        "id": "di",
+        "name": "Dependency Injection",
+        "responsibility": "Hilt modules providing dependencies across all layers with proper scoping.",
+        "commonPatterns": [
+          "@Module and @InstallIn",
+          "Singleton scope for repositories",
+          "ViewModelScoped",
+          "Constructor injection"
+        ],
+        "relatedFiles": [
+          "*/di/**/*.kt",
+          "shared/data/core/src/main/java/com/ivy/data/di/*.kt"
+        ],
+        "risks": [
+          "Complex module dependency graph"
+        ]
+      }
+    ],
+    "dataFlow": [
+      {
+        "from": "Composable UI",
+        "to": "ViewModel",
+        "description": "User interactions trigger events sent to ViewModel"
+      },
+      {
+        "from": "ViewModel",
+        "to": "Use Cases",
+        "description": "ViewModel delegates business logic to domain use cases"
+      },
+      {
+        "from": "Use Cases",
+        "to": "Repositories",
+        "description": "Use cases fetch/persist data through repository interfaces"
+      },
+      {
+        "from": "Repositories",
+        "to": "Data Sources (Room/Ktor)",
+        "description": "Repository implementations coordinate local DB and remote API calls"
+      },
+      {
+        "from": "Data Sources",
+        "to": "Repositories",
+        "description": "Data flows back through mappers (Entity -> Domain)"
+      },
+      {
+        "from": "Repositories",
+        "to": "ViewModel",
+        "description": "Data exposed as Flow/suspend functions to ViewModel"
+      },
+      {
+        "from": "ViewModel",
+        "to": "Composable UI",
+        "description": "ViewModel exposes StateFlow for UI to collect and render"
+      }
+    ],
+    "dependencyDirection": "Inward - Outer layers depend on inner layers. Domain has no framework dependencies.",
+    "strengths": [
+      "Excellent modularization with 41 modules for clear boundaries",
+      "Strong type safety with Kotlin and ArrowKt",
+      "Testable architecture with DI and clean separation",
+      "Modern tech stack (Compose, Coroutines, Flow)",
+      "Comprehensive testing infrastructure"
+    ],
+    "concerns": [
+      "Project no longer maintained (Nov 2024)",
+      "Some ViewModels have memory leak warnings",
+      "Legacy code marked @Deprecated needs cleanup",
+      "Complex module graph may slow builds"
+    ],
+    "recommendations": [
+      "Refactor ViewModels with @SuppressLint('StaticFieldLeak')",
+      "Remove or refactor deprecated legacy code",
+      "Add more integration tests for critical flows",
+      "Consider build performance optimizations",
+      "Implement comprehensive error handling strategy"
+    ]
+  },
+  "modules": [
+    {
+      "id": "app",
+      "name": "app",
+      "type": "application",
+      "path": "app",
+      "responsibility": "Application entry point, navigation setup, dependency wiring and app-level configuration.",
+      "riskLevel": "medium",
+      "stability": "medium",
+      "dependencies": [
+        "core-network",
+        "core-database",
+        "feature-home",
+        "feature-profile"
+      ],
+      "publicApis": [],
+      "keyPackages": [
+        "com.example.app",
+        "com.example.app.navigation"
+      ],
+      "importantFiles": [
+        "MainActivity.kt",
+        "AppNavHost.kt",
+        "Application.kt"
+      ],
+      "testCoverage": {
+        "status": "partial",
+        "existingTests": [
+          "NavigationTest.kt"
+        ],
+        "missingAreas": [
+          "Navigation graph tests",
+          "Deep link handling"
+        ]
+      },
+      "risks": [
+        {
+          "id": "risk-app-navigation",
+          "severity": "medium",
+          "category": "navigation",
+          "title": "Navigation complexity may grow in app module",
+          "affectedFiles": [
+            "AppNavHost.kt"
+          ],
+          "whyItMatters": "Centralized navigation can become difficult to maintain as features grow.",
+          "recommendation": "Move feature-specific navigation into feature modules where possible.",
+          "suggestedTest": "Add navigation route tests for core user flows."
+        }
+      ]
+    },
+    {
+      "id": "core-network",
+      "name": "core-network",
+      "type": "library",
+      "path": "core/network",
+      "responsibility": "Provides network layer abstractions, Retrofit setup, and API clients.",
+      "riskLevel": "low",
+      "stability": "high",
+      "dependencies": [],
+      "publicApis": [
+        "NetworkModule",
+        "ApiClient"
+      ],
+      "keyPackages": [
+        "com.example.core.network",
+        "com.example.core.network.di"
+      ],
+      "importantFiles": [
+        "NetworkModule.kt",
+        "ApiClient.kt",
+        "AuthInterceptor.kt"
+      ],
+      "testCoverage": {
+        "status": "good",
+        "existingTests": [
+          "ApiClientTest.kt",
+          "AuthInterceptorTest.kt"
+        ],
+        "missingAreas": [
+          "Retry logic tests"
+        ]
+      },
+      "risks": []
+    },
+    {
+      "id": "core-database",
+      "name": "core-database",
+      "type": "library",
+      "path": "core/database",
+      "responsibility": "Provides Room database setup and DAOs for local persistence.",
+      "riskLevel": "medium",
+      "stability": "medium",
+      "dependencies": [],
+      "publicApis": [
+        "AppDatabase",
+        "UserDao"
+      ],
+      "keyPackages": [
+        "com.example.core.database"
+      ],
+      "importantFiles": [
+        "AppDatabase.kt",
+        "UserDao.kt",
+        "UserEntity.kt"
+      ],
+      "testCoverage": {
+        "status": "partial",
+        "existingTests": [
+          "UserDaoTest.kt"
+        ],
+        "missingAreas": [
+          "Database migration tests"
+        ]
+      },
+      "risks": [
+        {
+          "id": "risk-db-migration",
+          "severity": "high",
+          "category": "persistence",
+          "title": "Database migrations are not tested",
+          "affectedFiles": [
+            "AppDatabase.kt"
+          ],
+          "whyItMatters": "Untested migrations can cause data loss in production.",
+          "recommendation": "Add migration tests for all schema changes.",
+          "suggestedTest": "Test migration from version 1 to 2 preserves user data."
+        }
+      ]
+    },
+    {
+      "id": "feature-home",
+      "name": "feature-home",
+      "type": "library",
+      "path": "feature/home",
+      "responsibility": "Implements home screen feature with user dashboard and quick actions.",
+      "riskLevel": "medium",
+      "stability": "medium",
+      "dependencies": [
+        "core-network",
+        "core-database"
+      ],
+      "publicApis": [
+        "HomeScreen",
+        "HomeViewModel"
+      ],
+      "keyPackages": [
+        "com.example.feature.home"
+      ],
+      "importantFiles": [
+        "HomeScreen.kt",
+        "HomeViewModel.kt",
+        "GetHomeDataUseCase.kt"
+      ],
+      "testCoverage": {
+        "status": "partial",
+        "existingTests": [
+          "HomeViewModelTest.kt"
+        ],
+        "missingAreas": [
+          "Error state handling",
+          "Empty state rendering"
+        ]
+      },
+      "risks": []
+    }
+  ],
+  "features": [
+    {
+      "id": "home",
+      "name": "Home",
+      "description": "Main landing experience for users after opening the app.",
+      "businessPurpose": "Provides entry points to key product areas and displays user summary.",
+      "complexity": "medium",
+      "confidence": 0.82,
+      "riskLevel": "medium",
+      "entryPoints": [
+        "HomeScreen.kt",
+        "AppNavHost.kt"
+      ],
+      "coreFiles": [
+        "HomeScreen.kt",
+        "HomeViewModel.kt",
+        "GetHomeDataUseCase.kt",
+        "HomeRepository.kt"
+      ],
+      "screens": [
+        "HomeScreen"
+      ],
+      "viewModels": [
+        "HomeViewModel"
+      ],
+      "useCases": [
+        "GetHomeDataUseCase"
+      ],
+      "repositories": [
+        "HomeRepository"
+      ],
+      "uiComponents": [
+        "HomeHeader",
+        "HomeContentCard",
+        "LoadingStateView",
+        "ErrorStateView"
+      ],
+      "navigationRoutes": [
+        "home"
+      ],
+      "analyticsEvents": [
+        "home_opened",
+        "home_card_clicked"
+      ],
+      "dependencies": [
+        "UserRepository",
+        "AnalyticsTracker"
+      ],
+      "existingTests": [
+        "HomeViewModelTest.kt"
+      ],
+      "missingTests": [
+        "Home data loading error",
+        "Empty state rendering",
+        "Analytics event when card is clicked"
+      ],
+      "stateModel": {
+        "stateClass": "HomeUiState",
+        "states": [
+          "Loading",
+          "Content",
+          "Empty",
+          "Error"
+        ],
+        "events": [
+          "OnRefresh",
+          "OnCardClick",
+          "OnRetry"
+        ],
+        "sideEffects": [
+          "NavigateToDetails",
+          "ShowErrorMessage"
+        ]
+      },
+      "risks": [
+        {
+          "id": "risk-home-error-state",
+          "severity": "medium",
+          "category": "state_management",
+          "title": "Error state may not preserve previous content",
+          "affectedFiles": [
+            "HomeViewModel.kt",
+            "HomeScreen.kt"
+          ],
+          "whyItMatters": "Users may see a blank screen after transient network errors.",
+          "recommendation": "Consider keeping stale content while showing a non-blocking error message.",
+          "suggestedTest": "When refresh fails after successful load, previous content remains visible."
+        }
+      ],
+      "suggestedPrChecklist": [
+        "Check loading, content, empty and error states.",
+        "Verify analytics events.",
+        "Add ViewModel tests for retry flow."
+      ]
+    },
+    {
+      "id": "profile",
+      "name": "Profile",
+      "description": "User profile management and settings.",
+      "businessPurpose": "Allows users to view and edit their profile information.",
+      "complexity": "low",
+      "confidence": 0.88,
+      "riskLevel": "low",
+      "entryPoints": [
+        "ProfileScreen.kt"
+      ],
+      "coreFiles": [
+        "ProfileScreen.kt",
+        "ProfileViewModel.kt",
+        "UpdateProfileUseCase.kt"
+      ],
+      "screens": [
+        "ProfileScreen"
+      ],
+      "viewModels": [
+        "ProfileViewModel"
+      ],
+      "useCases": [
+        "GetProfileUseCase",
+        "UpdateProfileUseCase"
+      ],
+      "repositories": [
+        "UserRepository"
+      ],
+      "uiComponents": [
+        "ProfileHeader",
+        "ProfileForm"
+      ],
+      "navigationRoutes": [
+        "profile"
+      ],
+      "analyticsEvents": [
+        "profile_viewed",
+        "profile_updated"
+      ],
+      "dependencies": [
+        "UserRepository"
+      ],
+      "existingTests": [
+        "ProfileViewModelTest.kt",
+        "UpdateProfileUseCaseTest.kt"
+      ],
+      "missingTests": [
+        "Profile update validation errors"
+      ],
+      "stateModel": {
+        "stateClass": "ProfileUiState",
+        "states": [
+          "Loading",
+          "Content",
+          "Saving",
+          "Error"
+        ],
+        "events": [
+          "OnSave",
+          "OnCancel"
+        ],
+        "sideEffects": [
+          "ShowSuccessMessage",
+          "NavigateBack"
+        ]
+      },
+      "risks": [],
+      "suggestedPrChecklist": [
+        "Test profile update flow",
+        "Verify validation messages"
+      ]
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "description": "App settings and preferences management.",
+      "businessPurpose": "Allows users to configure app behavior and preferences.",
+      "complexity": "low",
+      "confidence": 0.90,
+      "riskLevel": "low",
+      "entryPoints": [
+        "SettingsScreen.kt"
+      ],
+      "coreFiles": [
+        "SettingsScreen.kt",
+        "SettingsViewModel.kt"
+      ],
+      "screens": [
+        "SettingsScreen"
+      ],
+      "viewModels": [
+        "SettingsViewModel"
+      ],
+      "useCases": [
+        "GetSettingsUseCase",
+        "UpdateSettingsUseCase"
+      ],
+      "repositories": [
+        "SettingsRepository"
+      ],
+      "uiComponents": [
+        "SettingItem",
+        "SettingSwitch"
+      ],
+      "navigationRoutes": [
+        "settings"
+      ],
+      "analyticsEvents": [
+        "settings_opened",
+        "setting_changed"
+      ],
+      "dependencies": [
+        "SettingsRepository"
+      ],
+      "existingTests": [
+        "SettingsViewModelTest.kt"
+      ],
+      "missingTests": [
+        "Settings persistence"
+      ],
+      "stateModel": {
+        "stateClass": "SettingsUiState",
+        "states": [
+          "Loading",
+          "Content"
+        ],
+        "events": [
+          "OnToggleSetting"
+        ],
+        "sideEffects": []
+      },
+      "risks": [],
+      "suggestedPrChecklist": [
+        "Test all settings toggles",
+        "Verify settings are persisted"
+      ]
+    }
+  ],
+  "dependencyInjection": {
+    "framework": "Hilt",
+    "summary": "Dependency injection is handled through Hilt modules and constructor injection.",
+    "modules": [
+      {
+        "name": "NetworkModule",
+        "path": "core/network/di/NetworkModule.kt",
+        "provides": [
+          "Retrofit",
+          "OkHttpClient",
+          "UserApi"
+        ],
+        "scope": "Singleton",
+        "risks": [
+          "Too many network dependencies may be provided from one module."
+        ]
+      },
+      {
+        "name": "DatabaseModule",
+        "path": "core/database/di/DatabaseModule.kt",
+        "provides": [
+          "AppDatabase",
+          "UserDao"
+        ],
+        "scope": "Singleton",
+        "risks": []
+      },
+      {
+        "name": "RepositoryModule",
+        "path": "data/di/RepositoryModule.kt",
+        "provides": [
+          "UserRepository",
+          "SettingsRepository"
+        ],
+        "scope": "Singleton",
+        "risks": [
+          "Repository bindings should depend on abstractions to keep tests simple."
+        ]
+      }
+    ],
+    "injectionPatterns": [
+      "Constructor injection for ViewModels and use cases",
+      "Provides methods for Retrofit and database instances",
+      "Binds methods for repository interfaces"
+    ],
+    "scopes": [
+      "Singleton",
+      "ViewModelScoped"
+    ],
+    "risks": [
+      {
+        "id": "risk-di-scope",
+        "severity": "low",
+        "category": "dependency_injection",
+        "title": "Some dependencies may have wider scope than needed",
+        "affectedFiles": [
+          "NetworkModule.kt"
+        ],
+        "whyItMatters": "Overly broad scopes can make lifecycle and memory behavior harder to reason about.",
+        "recommendation": "Review whether all provided dependencies need Singleton scope.",
+        "suggestedTest": "Add tests with fake dependencies for ViewModels and use cases."
+      }
+    ]
+  },
+  "concurrency": {
+    "summary": "The project uses Kotlin Coroutines and Flow for asynchronous work and reactive state updates.",
+    "technologies": [
+      "Kotlin Coroutines",
+      "StateFlow",
+      "SharedFlow",
+      "WorkManager"
+    ],
+    "dispatchers": [
+      {
+        "name": "Dispatchers.IO",
+        "usage": "Network and database operations",
+        "relatedFiles": [
+          "UserRepositoryImpl.kt",
+          "SettingsRepositoryImpl.kt"
+        ]
+      },
+      {
+        "name": "Dispatchers.Main",
+        "usage": "UI state updates in ViewModels",
+        "relatedFiles": [
+          "HomeViewModel.kt",
+          "ProfileViewModel.kt"
+        ]
+      }
+    ],
+    "flows": [
+      {
+        "name": "homeUiState",
+        "type": "StateFlow<HomeUiState>",
+        "owner": "HomeViewModel",
+        "purpose": "Exposes Home screen state to Compose UI.",
+        "risks": [
+          "State updates should be atomic to avoid inconsistent UI states."
+        ]
+      },
+      {
+        "name": "profileUiState",
+        "type": "StateFlow<ProfileUiState>",
+        "owner": "ProfileViewModel",
+        "purpose": "Exposes Profile screen state to Compose UI.",
+        "risks": []
+      }
+    ],
+    "backgroundWork": [
+      {
+        "name": "SyncWorker",
+        "framework": "WorkManager",
+        "purpose": "Synchronizes cached data in the background.",
+        "risks": [
+          "Retry policy should be validated for network failures."
+        ]
+      }
+    ],
+    "sharedMutableState": [
+      {
+        "name": "inMemoryCache",
+        "owner": "UserRepositoryImpl",
+        "risk": "Potential race condition if accessed from multiple dispatchers without synchronization."
+      }
+    ],
+    "cancellationRisks": [
+      "Long-running operations should check coroutine cancellation.",
+      "ViewModel jobs should be cancelled with viewModelScope."
+    ],
+    "recommendations": [
+      "Inject dispatchers for testability.",
+      "Add tests for cancellation and retry behavior.",
+      "Avoid shared mutable state or protect it with proper synchronization."
+    ],
+    "risks": [
+      {
+        "id": "risk-coroutine-error",
+        "severity": "medium",
+        "category": "concurrency",
+        "title": "Coroutine errors may not be handled consistently",
+        "affectedFiles": [
+          "HomeViewModel.kt"
+        ],
+        "whyItMatters": "Unhandled exceptions may cancel parent jobs or leave UI in loading state.",
+        "recommendation": "Wrap async calls with explicit error handling and expose error state.",
+        "suggestedTest": "Repository throws exception and ViewModel emits Error state."
+      }
+    ]
+  },
+  "uiLayer": {
+    "framework": "Jetpack Compose",
+    "summary": "UI is implemented with Compose screens, reusable composables and ViewModel-driven state.",
+    "screens": [
+      {
+        "id": "home_screen",
+        "name": "HomeScreen",
+        "path": "feature/home/HomeScreen.kt",
+        "route": "home",
+        "stateSource": "HomeViewModel",
+        "uiState": "HomeUiState",
+        "userActions": [
+          "OnRefresh",
+          "OnCardClick",
+          "OnRetry"
+        ],
+        "reusableComponents": [
+          "HomeHeader",
+          "HomeContentCard"
+        ],
+        "risks": [
+          "Composable may grow too large if more states are added."
+        ]
+      },
+      {
+        "id": "profile_screen",
+        "name": "ProfileScreen",
+        "path": "feature/profile/ProfileScreen.kt",
+        "route": "profile",
+        "stateSource": "ProfileViewModel",
+        "uiState": "ProfileUiState",
+        "userActions": [
+          "OnSave",
+          "OnCancel"
+        ],
+        "reusableComponents": [
+          "ProfileHeader",
+          "ProfileForm"
+        ],
+        "risks": []
+      }
+    ],
+    "stateManagement": {
+      "pattern": "ViewModel exposes StateFlow UI state",
+      "stateClasses": [
+        "HomeUiState",
+        "ProfileUiState",
+        "SettingsUiState"
+      ],
+      "sideEffectHandling": [
+        "SharedFlow for one-off navigation events"
+      ],
+      "risks": [
+        "One-off events should not be represented as persistent UI state."
+      ]
+    },
+    "navigation": {
+      "framework": "Navigation Compose",
+      "routes": [
+        {
+          "route": "home",
+          "screen": "HomeScreen",
+          "arguments": [],
+          "deepLinks": []
+        },
+        {
+          "route": "profile",
+          "screen": "ProfileScreen",
+          "arguments": [],
+          "deepLinks": []
+        }
+      ],
+      "risks": [
+        "Route strings should be centralized or typed to avoid runtime mistakes."
+      ]
+    },
+    "recompositionRisks": [
+      {
+        "title": "Large composables may recompose more than necessary",
+        "affectedFiles": [
+          "HomeScreen.kt"
+        ],
+        "recommendation": "Split large composables and pass stable parameters."
+      }
+    ],
+    "accessibility": {
+      "status": "unknown",
+      "concerns": [
+        "Content descriptions are not verified.",
+        "Touch target sizes are not verified."
+      ],
+      "recommendations": [
+        "Add content descriptions for important icons.",
+        "Check dynamic text scaling."
+      ]
+    }
+  },
+  "testing": {
+    "summary": "The project has partial unit test coverage, mostly around ViewModels and use cases.",
+    "frameworks": [
+      "JUnit",
+      "MockK",
+      "Turbine",
+      "Coroutines Test",
+      "Compose UI Test"
+    ],
+    "existingTests": [
+      {
+        "name": "HomeViewModelTest",
+        "path": "feature/home/src/test/HomeViewModelTest.kt",
+        "type": "unit",
+        "covers": [
+          "loading state",
+          "successful content state"
+        ],
+        "gaps": [
+          "error state",
+          "retry action",
+          "analytics event"
+        ]
+      },
+      {
+        "name": "ProfileViewModelTest",
+        "path": "feature/profile/src/test/ProfileViewModelTest.kt",
+        "type": "unit",
+        "covers": [
+          "profile loading",
+          "profile update"
+        ],
+        "gaps": [
+          "validation errors"
+        ]
+      }
+    ],
+    "missingTestAreas": [
+      {
+        "area": "Network error handling",
+        "priority": "high",
+        "suggestedTests": [
+          "Repository returns domain error when API returns 500",
+          "ViewModel emits Error state when repository fails"
+        ]
+      },
+      {
+        "area": "Navigation events",
+        "priority": "medium",
+        "suggestedTests": [
+          "Clicking home card emits NavigateToDetails side effect"
+        ]
+      },
+      {
+        "area": "Database migrations",
+        "priority": "high",
+        "suggestedTests": [
+          "Migration from v1 to v2 preserves data",
+          "Migration from v2 to v3 adds new columns"
+        ]
+      }
+    ],
+    "testabilityConcerns": [
+      "Dispatchers should be injected.",
+      "Repository interfaces should be used in ViewModels.",
+      "Large composables may be hard to test."
+    ],
+    "recommendations": [
+      "Add ViewModel tests for all UI states.",
+      "Add repository tests for network error mapping.",
+      "Add UI tests for critical flows."
+    ]
+  },
+  "risks": [
+    {
+      "id": "risk-global-001",
+      "severity": "high",
+      "category": "testing",
+      "title": "Important error flows are not covered by tests",
+      "affectedModules": [
+        "feature-home",
+        "core-network"
+      ],
+      "affectedFiles": [
+        "HomeViewModel.kt",
+        "UserRepositoryImpl.kt"
+      ],
+      "whyItMatters": "Regression in error handling could result in stuck loading states or poor user experience.",
+      "recommendation": "Add ViewModel and repository tests for API failures, timeouts and empty responses.",
+      "suggestedTest": "When repository returns NetworkError, ViewModel emits Error state and hides loading.",
+      "confidence": 0.78
+    },
+    {
+      "id": "risk-global-002",
+      "severity": "critical",
+      "category": "persistence",
+      "title": "Database migrations are not tested",
+      "affectedModules": [
+        "core-database"
+      ],
+      "affectedFiles": [
+        "AppDatabase.kt"
+      ],
+      "whyItMatters": "Untested migrations can cause data loss or app crashes in production.",
+      "recommendation": "Add migration tests for all schema versions.",
+      "suggestedTest": "Test migration from version 1 to 2 preserves all user data.",
+      "confidence": 0.92
+    },
+    {
+      "id": "risk-global-003",
+      "severity": "medium",
+      "category": "state_management",
+      "title": "Error states may not preserve previous content",
+      "affectedModules": [
+        "feature-home"
+      ],
+      "affectedFiles": [
+        "HomeViewModel.kt"
+      ],
+      "whyItMatters": "Users may see blank screens after transient errors.",
+      "recommendation": "Keep stale content visible while showing error messages.",
+      "suggestedTest": "When refresh fails, previous content remains visible with error banner.",
+      "confidence": 0.75
+    }
+  ],
+  "prReadiness": {
+    "score": 74,
+    "summary": "The project is understandable and follows common Android architecture patterns, but several areas need stronger tests and clearer ownership.",
+    "readyItems": [
+      "Architecture has clear UI, domain and data separation.",
+      "Main features can be identified from screens and ViewModels.",
+      "Repository pattern is present.",
+      "Dependency injection is properly configured."
+    ],
+    "attentionItems": [
+      "Error states need better test coverage.",
+      "Database migrations should be tested.",
+      "Navigation routes should be made type-safe.",
+      "Coroutine exception handling should be checked."
+    ],
+    "suggestedPrDescription": "This change improves repository understanding by introducing a structured RepoLens report generated by IBM Bob and visualized in an Android app. The app demonstrates clean architecture principles with proper separation of concerns.",
+    "qaChecklist": [
+      "Verify all overview metrics are displayed correctly.",
+      "Open each module and feature detail screen.",
+      "Check empty and invalid JSON states.",
+      "Verify risk severity grouping.",
+      "Check PR readiness section.",
+      "Rotate device or test different screen sizes.",
+      "Test navigation back stack behavior."
+    ],
+    "reviewerNotes": [
+      "Validate whether Bob-generated file references are accurate.",
+      "Check that the app does not expose any private repository data.",
+      "Confirm JSON parsing is resilient to missing optional fields.",
+      "Review error handling for malformed JSON."
+    ],
+    "rollbackPlan": [
+      "Remove generated JSON report from assets.",
+      "Disable RepoLens visualizer entry point.",
+      "Keep schema and models for future iteration."
+    ]
+  },
+  "performanceMetrics": {
+    "buildTimeSeconds": 45,
+    "appSizeMB": 12.5,
+    "methodCount": 8542,
+    "largeFiles": [
+      {
+        "path": "app/src/main/java/com/example/app/ui/home/HomeScreen.kt",
+        "sizeKB": 85,
+        "linesOfCode": 450
+      },
+      {
+        "path": "app/src/main/java/com/example/app/data/repository/UserRepositoryImpl.kt",
+        "sizeKB": 62,
+        "linesOfCode": 380
+      }
+    ],
+    "complexMethods": [
+      {
+        "name": "processUserData",
+        "filePath": "app/src/main/java/com/example/app/domain/usecase/ProcessUserDataUseCase.kt",
+        "complexity": 15,
+        "linesOfCode": 120
+      },
+      {
+        "name": "validateForm",
+        "filePath": "app/src/main/java/com/example/app/ui/profile/ProfileViewModel.kt",
+        "complexity": 12,
+        "linesOfCode": 95
+      }
+    ],
+    "slowModules": [
+      {
+        "name": "app",
+        "buildTimeSeconds": 25
+      },
+      {
+        "name": "core-network",
+        "buildTimeSeconds": 12
+      }
+    ]
+  },
+  "smartRecommendations": [
+    {
+      "id": "rec-1",
+      "title": "Add Unit Tests for ViewModels",
+      "description": "Several ViewModels lack comprehensive unit tests. Adding tests will improve code quality and catch bugs early.",
+      "reasoning": "ViewModels contain business logic that should be tested. Current test coverage is only 45% for ViewModels.",
+      "impact": "HIGH",
+      "effort": "MEDIUM",
+      "category": "Testing",
+      "codeExample": "@Test\nfun `when user logs in successfully, navigate to home`() {\n    // Arrange\n    val viewModel = LoginViewModel(loginUseCase)\n    \n    // Act\n    viewModel.login(\"user@example.com\", \"password\")\n    \n    // Assert\n    assertEquals(LoginState.Success, viewModel.state.value)\n}",
+      "learnMoreUrl": "https://developer.android.com/training/testing/unit-testing"
+    },
+    {
+      "id": "rec-2",
+      "title": "Implement Proper Error Handling",
+      "description": "Network calls lack comprehensive error handling. Add retry logic and user-friendly error messages.",
+      "reasoning": "Current implementation shows generic errors. Users need clear feedback when operations fail.",
+      "impact": "HIGH",
+      "effort": "SMALL",
+      "category": "Performance",
+      "codeExample": "sealed class Result<out T> {\n    data class Success<T>(val data: T) : Result<T>()\n    data class Error(val exception: Exception, val message: String) : Result<Nothing>()\n    object Loading : Result<Nothing>()\n}",
+      "learnMoreUrl": "https://developer.android.com/kotlin/coroutines/coroutines-best-practices"
+    },
+    {
+      "id": "rec-3",
+      "title": "Optimize Large Files",
+      "description": "HomeScreen.kt has 450 lines. Consider breaking it into smaller, reusable components.",
+      "reasoning": "Large files are harder to maintain and test. Smaller components improve code organization.",
+      "impact": "MEDIUM",
+      "effort": "MEDIUM",
+      "category": "Code Quality",
+      "codeExample": "@Composable\nfun HomeScreen() {\n    Column {\n        HomeHeader()\n        HomeContent()\n        HomeFooter()\n    }\n}\n\n@Composable\nprivate fun HomeHeader() { /* ... */ }",
+      "learnMoreUrl": null
+    },
+    {
+      "id": "rec-4",
+      "title": "Add Security Best Practices",
+      "description": "Implement certificate pinning and encrypt sensitive data in local storage.",
+      "reasoning": "Current implementation stores tokens in SharedPreferences without encryption.",
+      "impact": "HIGH",
+      "effort": "LARGE",
+      "category": "Security",
+      "codeExample": "val encryptedPrefs = EncryptedSharedPreferences.create(\n    \"secure_prefs\",\n    masterKey,\n    context,\n    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,\n    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM\n)",
+      "learnMoreUrl": "https://developer.android.com/topic/security/data"
+    },
+    {
+      "id": "rec-5",
+      "title": "Reduce Method Count",
+      "description": "Current method count is 8542. Consider using R8/ProGuard optimization and removing unused dependencies.",
+      "reasoning": "High method count can impact build times and app size. Optimization will improve performance.",
+      "impact": "MEDIUM",
+      "effort": "SMALL",
+      "category": "Performance",
+      "codeExample": "android {\n    buildTypes {\n        release {\n            minifyEnabled true\n            shrinkResources true\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')\n        }\n    }\n}",
+      "learnMoreUrl": "https://developer.android.com/studio/build/shrink-code"
+    }
+  ],
+  "architectureDiagram": {
+    "nodes": [
+      {
+        "id": "ui",
+        "label": "UI Layer",
+        "type": "layer",
+        "x": 50,
+        "y": 50
+      },
+      {
+        "id": "viewmodel",
+        "label": "ViewModel",
+        "type": "component",
+        "x": 50,
+        "y": 200
+      },
+      {
+        "id": "usecase",
+        "label": "Use Cases",
+        "type": "component",
+        "x": 250,
+        "y": 200
+      },
+      {
+        "id": "repository",
+        "label": "Repository",
+        "type": "component",
+        "x": 450,
+        "y": 200
+      },
+      {
+        "id": "network",
+        "label": "Network",
+        "type": "datasource",
+        "x": 350,
+        "y": 350
+      },
+      {
+        "id": "database",
+        "label": "Database",
+        "type": "datasource",
+        "x": 550,
+        "y": 350
+      }
+    ],
+    "connections": [
+      {
+        "from": "ui",
+        "to": "viewmodel",
+        "label": "observes"
+      },
+      {
+        "from": "viewmodel",
+        "to": "usecase",
+        "label": "calls"
+      },
+      {
+        "from": "usecase",
+        "to": "repository",
+        "label": "uses"
+      },
+      {
+        "from": "repository",
+        "to": "network",
+        "label": "fetches"
+      },
+      {
+        "from": "repository",
+        "to": "database",
+        "label": "caches"
+      }
+    ]
+}
+  }
