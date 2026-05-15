@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.vero.repolens.data.engine.RecommendationEngine
 import com.vero.repolens.data.models.RepoLensReport
 import com.vero.repolens.ui.components.ExportDialog
 import java.text.SimpleDateFormat
@@ -83,6 +84,9 @@ fun OverviewScreen(
     onNavigateToRecommendations: () -> Unit = {},
     onNavigateToExport: () -> Unit = {}
 ) {
+    val generatedRecommendations = remember(report) {
+        RecommendationEngine().generateRecommendations(report)
+    }
     var showExportDialog by remember { mutableStateOf(false) }
     if (showExportDialog) {
         ExportDialog(
@@ -282,7 +286,7 @@ fun OverviewScreen(
             item {
                 OverviewActionCard(
                     title = "Smart Recommendations",
-                    subtitle = "${report.recommendations.size} recommendations",
+                    subtitle = "${generatedRecommendations.size} recommendations",
                     supporting = "AI-guided opportunities across testing, architecture, and performance",
                     icon = Icons.Default.AutoAwesome,
                     onClick = onNavigateToRecommendations,
@@ -303,6 +307,8 @@ fun OverviewScreen(
 
 @Composable
 private fun OverviewHeroCard(report: RepoLensReport) {
+    var summaryExpanded by remember(report.repository.summary) { mutableStateOf(false) }
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -325,9 +331,20 @@ private fun OverviewHeroCard(report: RepoLensReport) {
                 text = report.repository.summary,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.86f),
-                maxLines = 4,
+                maxLines = if (summaryExpanded) Int.MAX_VALUE else 4,
                 overflow = TextOverflow.Ellipsis
             )
+            if (report.repository.summary.length > 140) {
+                TextButton(
+                    onClick = { summaryExpanded = !summaryExpanded },
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        text = if (summaryExpanded) "Show less" else "Read more",
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 HeroChip(
                     icon = Icons.Default.Code,
@@ -505,8 +522,8 @@ private fun OverviewLabel(text: String) {
 @Composable
 private fun MetricsGrid(report: RepoLensReport) {
     val metrics = listOf(
-        SnapshotMetric("Modules", report.metrics.modulesCount.toString(), Icons.Default.Folder),
-        SnapshotMetric("Features", report.metrics.featuresCount.toString(), Icons.Default.Star),
+        SnapshotMetric("Modules", report.modules.size.toString(), Icons.Default.Folder),
+        SnapshotMetric("Features", report.features.size.toString(), Icons.Default.Star),
         SnapshotMetric("High Risks", report.metrics.highRiskAreasCount.toString(), Icons.Default.Warning),
         SnapshotMetric("Missing Tests", report.metrics.missingTestsCount.toString(), Icons.Default.BugReport)
     )
@@ -546,8 +563,8 @@ private fun SnapshotMetricCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Surface(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
@@ -557,13 +574,13 @@ private fun SnapshotMetricCard(
                     imageVector = metric.icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(10.dp)
+                    modifier = Modifier.padding(8.dp)
                 )
             }
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = metric.value,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Text(

@@ -1,21 +1,66 @@
 package com.vero.repolens.ui.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.FilterAltOff
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.TaskAlt
+import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.vero.repolens.data.models.*
+import com.vero.repolens.data.models.ActionCategory
+import com.vero.repolens.data.models.ActionItem
+import com.vero.repolens.data.models.ActionStatus
+import com.vero.repolens.data.models.Priority
 import com.vero.repolens.ui.components.ActionItemCard
-import com.vero.repolens.ui.components.LoadingState
 import com.vero.repolens.viewmodel.ActionItemsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +76,7 @@ fun ActionItemsScreen(
     val inProgressCount by viewModel.inProgressCount.collectAsState()
     val doneCount by viewModel.doneCount.collectAsState()
 
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showEditorSheet by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<ActionItem?>(null) }
 
     Scaffold(
@@ -40,7 +85,7 @@ fun ActionItemsScreen(
                 title = { Text("Action Items") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -52,7 +97,10 @@ fun ActionItemsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddDialog = true }
+                onClick = {
+                    editingItem = null
+                    showEditorSheet = true
+                }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add action item")
             }
@@ -63,55 +111,18 @@ fun ActionItemsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Status counts
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    StatusCountChip(
-                        label = "To Do",
-                        count = todoCount,
-                        icon = Icons.Default.CheckBoxOutlineBlank,
-                        isSelected = filterStatus == ActionStatus.TODO,
-                        onClick = {
-                            viewModel.setStatusFilter(
-                                if (filterStatus == ActionStatus.TODO) null else ActionStatus.TODO
-                            )
-                        }
-                    )
-                    StatusCountChip(
-                        label = "In Progress",
-                        count = inProgressCount,
-                        icon = Icons.Default.HourglassEmpty,
-                        isSelected = filterStatus == ActionStatus.IN_PROGRESS,
-                        onClick = {
-                            viewModel.setStatusFilter(
-                                if (filterStatus == ActionStatus.IN_PROGRESS) null else ActionStatus.IN_PROGRESS
-                            )
-                        }
-                    )
-                    StatusCountChip(
-                        label = "Done",
-                        count = doneCount,
-                        icon = Icons.Default.CheckBox,
-                        isSelected = filterStatus == ActionStatus.DONE,
-                        onClick = {
-                            viewModel.setStatusFilter(
-                                if (filterStatus == ActionStatus.DONE) null else ActionStatus.DONE
-                            )
-                        }
+            ActionItemsOverviewCard(
+                todoCount = todoCount,
+                inProgressCount = inProgressCount,
+                doneCount = doneCount,
+                filterStatus = filterStatus,
+                onStatusSelected = { selectedStatus ->
+                    viewModel.setStatusFilter(
+                        if (filterStatus == selectedStatus) null else selectedStatus
                     )
                 }
-            }
+            )
 
-            // Priority filters
             Text(
                 text = "Filter by Priority",
                 style = MaterialTheme.typography.labelLarge,
@@ -137,10 +148,12 @@ fun ActionItemsScreen(
 
             Divider()
 
-            // Action items list
             if (filteredItems.isEmpty()) {
                 EmptyActionItemsState(
-                    onAddClick = { showAddDialog = true }
+                    onAddClick = {
+                        editingItem = null
+                        showEditorSheet = true
+                    }
                 )
             } else {
                 LazyColumn(
@@ -151,7 +164,10 @@ fun ActionItemsScreen(
                         ActionItemCard(
                             actionItem = item,
                             onStatusToggle = { viewModel.toggleActionItemStatus(item) },
-                            onEdit = { editingItem = item },
+                            onEdit = {
+                                editingItem = item
+                                showEditorSheet = true
+                            },
                             onDelete = { viewModel.deleteActionItem(item) }
                         )
                     }
@@ -160,12 +176,11 @@ fun ActionItemsScreen(
         }
     }
 
-    // Add/Edit Dialog
-    if (showAddDialog || editingItem != null) {
-        ActionItemDialog(
+    if (showEditorSheet || editingItem != null) {
+        ActionItemBottomSheet(
             actionItem = editingItem,
             onDismiss = {
-                showAddDialog = false
+                showEditorSheet = false
                 editingItem = null
             },
             onSave = { title, description, priority, category ->
@@ -186,10 +201,55 @@ fun ActionItemsScreen(
                         category = category
                     )
                 }
-                showAddDialog = false
+                showEditorSheet = false
                 editingItem = null
             }
         )
+    }
+}
+
+@Composable
+private fun ActionItemsOverviewCard(
+    todoCount: Int,
+    inProgressCount: Int,
+    doneCount: Int,
+    filterStatus: ActionStatus?,
+    onStatusSelected: (ActionStatus) -> Unit
+) {
+    androidx.compose.material3.Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            StatusCountChip(
+                label = "To Do",
+                count = todoCount,
+                icon = Icons.Default.CheckBoxOutlineBlank,
+                isSelected = filterStatus == ActionStatus.TODO,
+                onClick = { onStatusSelected(ActionStatus.TODO) }
+            )
+            StatusCountChip(
+                label = "In Progress",
+                count = inProgressCount,
+                icon = Icons.Default.HourglassEmpty,
+                isSelected = filterStatus == ActionStatus.IN_PROGRESS,
+                onClick = { onStatusSelected(ActionStatus.IN_PROGRESS) }
+            )
+            StatusCountChip(
+                label = "Done",
+                count = doneCount,
+                icon = Icons.Default.CheckBox,
+                isSelected = filterStatus == ActionStatus.DONE,
+                onClick = { onStatusSelected(ActionStatus.DONE) }
+            )
+        }
     }
 }
 
@@ -201,19 +261,48 @@ private fun StatusCountChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    FilterChip(
-        selected = isSelected,
+    Surface(
+        modifier = Modifier.weight(1f),
         onClick = onClick,
-        label = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(count.toString(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(label, style = MaterialTheme.typography.labelSmall)
-            }
+        shape = RoundedCornerShape(18.dp),
+        color = if (isSelected) {
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+        } else {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.42f)
         },
-        modifier = Modifier.padding(4.dp)
-    )
+        border = BorderStroke(
+            1.dp,
+            if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
+            else MaterialTheme.colorScheme.outline.copy(alpha = 0.22f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                count.toString(),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 }
 
 @Composable
@@ -253,124 +342,138 @@ private fun EmptyActionItemsState(onAddClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ActionItemDialog(
+private fun ActionItemBottomSheet(
     actionItem: ActionItem?,
     onDismiss: () -> Unit,
     onSave: (String, String, Priority, ActionCategory) -> Unit
 ) {
-    var title by remember { mutableStateOf(actionItem?.title ?: "") }
-    var description by remember { mutableStateOf(actionItem?.description ?: "") }
-    var priority by remember { mutableStateOf(actionItem?.priority ?: Priority.MEDIUM) }
-    var category by remember { mutableStateOf(actionItem?.category ?: ActionCategory.OTHER) }
+    var title by remember(actionItem?.id) { mutableStateOf(actionItem?.title ?: "") }
+    var description by remember(actionItem?.id) { mutableStateOf(actionItem?.description ?: "") }
+    var priority by remember(actionItem?.id) { mutableStateOf(actionItem?.priority ?: Priority.MEDIUM) }
+    var category by remember(actionItem?.id) { mutableStateOf(actionItem?.category ?: ActionCategory.OTHER) }
     var expandedPriority by remember { mutableStateOf(false) }
     var expandedCategory by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text(if (actionItem == null) "New Action Item" else "Edit Action Item") },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth()
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = if (actionItem == null) "New Action Item" else "Edit Action Item",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Title") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(18.dp)
+            )
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                maxLines = 5,
+                shape = RoundedCornerShape(18.dp)
+            )
+
+            ExposedDropdownMenuBox(
+                expanded = expandedPriority,
+                onExpandedChange = { expandedPriority = it }
             ) {
                 OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Title") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    value = priority.name,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Priority") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPriority) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    shape = RoundedCornerShape(18.dp)
                 )
-
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3,
-                    maxLines = 5
-                )
-
-                // Priority dropdown
-                ExposedDropdownMenuBox(
+                ExposedDropdownMenu(
                     expanded = expandedPriority,
-                    onExpandedChange = { expandedPriority = it }
+                    onDismissRequest = { expandedPriority = false }
                 ) {
-                    OutlinedTextField(
-                        value = priority.name,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Priority") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPriority) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedPriority,
-                        onDismissRequest = { expandedPriority = false }
-                    ) {
-                        Priority.values().forEach { p ->
-                            DropdownMenuItem(
-                                text = { Text(p.name) },
-                                onClick = {
-                                    priority = p
-                                    expandedPriority = false
-                                }
-                            )
-                        }
+                    Priority.values().forEach { value ->
+                        DropdownMenuItem(
+                            text = { Text(value.name) },
+                            onClick = {
+                                priority = value
+                                expandedPriority = false
+                            }
+                        )
                     }
                 }
+            }
 
-                // Category dropdown
-                ExposedDropdownMenuBox(
+            ExposedDropdownMenuBox(
+                expanded = expandedCategory,
+                onExpandedChange = { expandedCategory = it }
+            ) {
+                OutlinedTextField(
+                    value = category.name.replace('_', ' '),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Category") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    shape = RoundedCornerShape(18.dp)
+                )
+                ExposedDropdownMenu(
                     expanded = expandedCategory,
-                    onExpandedChange = { expandedCategory = it }
+                    onDismissRequest = { expandedCategory = false }
                 ) {
-                    OutlinedTextField(
-                        value = category.name.replace('_', ' '),
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Category") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedCategory,
-                        onDismissRequest = { expandedCategory = false }
-                    ) {
-                        ActionCategory.values().forEach { c ->
-                            DropdownMenuItem(
-                                text = { Text(c.name.replace('_', ' ')) },
-                                onClick = {
-                                    category = c
-                                    expandedCategory = false
-                                }
-                            )
-                        }
+                    ActionCategory.values().forEach { value ->
+                        DropdownMenuItem(
+                            text = { Text(value.name.replace('_', ' ')) },
+                            onClick = {
+                                category = value
+                                expandedCategory = false
+                            }
+                        )
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (title.isNotBlank()) {
-                        onSave(title, description, priority, category)
-                    }
-                },
-                enabled = title.isNotBlank()
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                TextButton(
+                    onClick = {
+                        if (title.isNotBlank()) {
+                            onSave(title, description, priority, category)
+                        }
+                    },
+                    enabled = title.isNotBlank()
+                ) {
+                    Text("Save")
+                }
             }
         }
-    )
+    }
 }
 
 // Made with Bob
