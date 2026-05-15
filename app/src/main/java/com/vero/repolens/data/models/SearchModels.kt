@@ -35,6 +35,10 @@ data class SearchFilter(
     val severities: Set<String> = emptySet(),
     val categories: Set<String> = emptySet()
 ) {
+    companion object {
+        val DEFAULT = SearchFilter()
+    }
+    
     fun matches(item: SearchableItem): Boolean {
         val typeMatch = types.contains(item.type)
         val severityMatch = severities.isEmpty() || (item.severity != null && severities.contains(item.severity))

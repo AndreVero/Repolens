@@ -19,6 +19,11 @@ class SearchViewModel @Inject constructor(
     private val repository: RepoLensRepository
 ) : ViewModel() {
 
+    companion object {
+        private const val SEARCH_DEBOUNCE_MS = 300L
+        private const val STATE_FLOW_TIMEOUT_MS = 5000L
+    }
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -30,9 +35,12 @@ class SearchViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
     // Debounced search results
     val searchResults: StateFlow<List<SearchableItem>> = combine(
-        _searchQuery.debounce(300), // 300ms debounce
+        _searchQuery.debounce(SEARCH_DEBOUNCE_MS),
         _activeFilter,
         _allItems
     ) { query, filter, items ->
@@ -42,7 +50,7 @@ class SearchViewModel @Inject constructor(
         searched.filter { filter.matches(it) }
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS),
         initialValue = emptyList()
     )
 
@@ -51,7 +59,7 @@ class SearchViewModel @Inject constructor(
         items.mapNotNull { it.severity }.toSet()
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS),
         initialValue = emptySet()
     )
 
@@ -59,7 +67,7 @@ class SearchViewModel @Inject constructor(
         items.map { it.category }.toSet()
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS),
         initialValue = emptySet()
     )
 
@@ -70,16 +78,22 @@ class SearchViewModel @Inject constructor(
     private fun loadSearchableItems() {
         viewModelScope.launch {
             _isLoading.value = true
+            _errorMessage.value = null
             when (val result = repository.loadReport()) {
                 is RepoLensResult.Success -> {
                     _allItems.value = repository.indexSearchableItems(result.report)
+                    _errorMessage.value = null
                 }
                 is RepoLensResult.Error -> {
-                    // Handle error - items remain empty
+                    _errorMessage.value = result.message
                 }
             }
             _isLoading.value = false
         }
+    }
+
+    fun retryLoadSearchableItems() {
+        loadSearchableItems()
     }
 
     fun updateSearchQuery(query: String) {

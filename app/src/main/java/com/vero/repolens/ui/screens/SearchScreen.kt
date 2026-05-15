@@ -43,7 +43,7 @@ fun SearchScreen(
                     }
                 },
                 actions = {
-                    if (searchQuery.isNotEmpty() || activeFilter != SearchFilter()) {
+                    if (searchQuery.isNotEmpty() || activeFilter != SearchFilter.DEFAULT) {
                         IconButton(onClick = {
                             viewModel.clearSearch()
                             viewModel.clearFilters()

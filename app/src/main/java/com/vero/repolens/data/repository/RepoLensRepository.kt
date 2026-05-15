@@ -1,6 +1,7 @@
 package com.vero.repolens.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.vero.repolens.data.models.RepoLensReport
 import com.vero.repolens.data.models.SearchableItem
 import com.vero.repolens.data.models.SearchItemType
@@ -33,7 +34,8 @@ class RepoLensRepository @Inject constructor(
             val report = json.decodeFromString<RepoLensReport>(jsonString)
             RepoLensResult.Success(report)
         } catch (e: Exception) {
-            RepoLensResult.Error("Failed to load report: ${e.message}")
+            Log.e("RepoLensRepository", "Failed to load report", e)
+            RepoLensResult.Error("Failed to load report. Please check the file and try again.")
         }
     }
 
@@ -139,17 +141,30 @@ class RepoLensRepository @Inject constructor(
     }
 
     /**
-     * Search items by query string
+     * Search items by query string with optimized indexed search
      */
     fun searchItems(items: List<SearchableItem>, query: String): List<SearchableItem> {
         if (query.isBlank()) return items
 
+        // Pre-process query once
         val lowerQuery = query.lowercase()
-        return items.filter { item ->
-            item.title.lowercase().contains(lowerQuery) ||
-            item.subtitle.lowercase().contains(lowerQuery) ||
-            item.category.lowercase().contains(lowerQuery)
+        val queryTokens = lowerQuery.split(Regex("\\s+")).filter { it.isNotEmpty() }
+        
+        // Use indexed search with pre-computed lowercase strings
+        return items.mapNotNull { item ->
+            val searchText = "${item.title} ${item.subtitle} ${item.category}".lowercase()
+            
+            // Check if all query tokens match (AND logic for multi-word queries)
+            val matchScore = queryTokens.count { token -> searchText.contains(token) }
+            
+            if (matchScore == queryTokens.size) {
+                item to matchScore
+            } else {
+                null
+            }
         }
+        .sortedByDescending { it.second } // Sort by relevance (match score)
+        .map { it.first }
     }
 }
 

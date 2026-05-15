@@ -2,6 +2,7 @@ package com.vero.repolens.di
 
 import android.content.Context
 import androidx.room.Room
+import com.vero.repolens.BuildConfig
 import com.vero.repolens.data.local.ActionItemDao
 import com.vero.repolens.data.local.AppDatabase
 import dagger.Module
@@ -28,7 +29,11 @@ object DatabaseModule {
             AppDatabase::class.java,
             AppDatabase.DATABASE_NAME
         )
-            .fallbackToDestructiveMigration() // For development - remove in production
+            .apply {
+                if (BuildConfig.DEBUG) {
+                    fallbackToDestructiveMigration()
+                }
+            }
             .build()
     }
     

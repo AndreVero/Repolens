@@ -38,8 +38,15 @@ interface ActionItemDao {
     
     /**
      * Get action items related to a specific risk
+     * Uses JSON_EACH to properly query the JSON array without wildcard issues
      */
-    @Query("SELECT * FROM action_items WHERE relatedRiskIds LIKE '%' || :riskId || '%'")
+    @Query("""
+        SELECT * FROM action_items
+        WHERE EXISTS (
+            SELECT 1 FROM json_each(relatedRiskIds)
+            WHERE json_each.value = :riskId
+        )
+    """)
     fun getActionItemsByRiskId(riskId: String): Flow<List<ActionItem>>
     
     /**
