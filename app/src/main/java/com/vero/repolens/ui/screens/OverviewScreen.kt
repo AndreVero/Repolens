@@ -1,5 +1,6 @@
 package com.vero.repolens.ui.screens
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -248,7 +249,7 @@ fun OverviewScreen(
             report.prReadiness?.let { prReadiness ->
                 item {
                     OverviewActionCard(
-                        title = "PR Readiness",
+                        title = "Ship Readiness",
                         subtitle = "Score ${prReadiness.score}%",
                         supporting = prReadiness.summary,
                         icon = Icons.Default.CheckCircle,
@@ -319,6 +320,7 @@ private fun OverviewHeroCard(report: RepoLensReport) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .animateContentSize()
                 .padding(22.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
@@ -360,18 +362,19 @@ private fun OverviewHeroCard(report: RepoLensReport) {
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
                 shape = MaterialTheme.shapes.large
             ) {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    MetaLine(
-                        label = "Architecture",
-                        value = report.repository.architectureStyle
+                    Text(
+                        text = "Generated",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     MetaLine(
-                        label = "Generated",
                         value = formatDate(report.metadata.generatedAt)
                     )
                 }
@@ -404,29 +407,15 @@ private fun HeroChip(
 }
 
 @Composable
-private fun MetaLine(
-    label: String,
-    value: String
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
+private fun MetaLine(value: String) {
+    Text(
+        text = value,
+        style = MaterialTheme.typography.bodyMedium,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
 }
 
 @Composable
@@ -436,7 +425,7 @@ private fun FeaturedScoresRow(report: RepoLensReport) {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         FeaturedScoreCard(
-            title = "PR Readiness",
+            title = "Ship Readiness",
             value = "${report.metrics.prReadinessScore}%",
             subtitle = "Review confidence",
             icon = Icons.Default.CheckCircle,

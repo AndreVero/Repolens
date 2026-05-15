@@ -144,7 +144,7 @@ fun ComplexityBadge(
 ) {
     val (color, textColor) = when (complexity.lowercase()) {
         "high" -> Color(0xFFE91E63).copy(alpha = 0.16f) to Color(0xFFB01855)
-        "medium" -> Color(0xFF2196F3).copy(alpha = 0.16f) to Color(0xFF1565C0)
+        "medium" -> Color(0xFFBFDDF9).copy(alpha = 0.36f) to Color(0xFF0D47A1)
         "low" -> Color(0xFF4CAF50).copy(alpha = 0.16f) to Color(0xFF2E7D32)
         else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
     }

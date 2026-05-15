@@ -142,7 +142,7 @@ fun PrReadinessScreen(
     prReadiness: PrReadiness,
     onNavigateBack: () -> Unit
 ) {
-    DetailScaffold(title = "PR Readiness", onNavigateBack = onNavigateBack) { paddingValues ->
+    DetailScaffold(title = "Ship Readiness", onNavigateBack = onNavigateBack) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -153,7 +153,7 @@ fun PrReadinessScreen(
             item {
                 ScoreHeroCard(
                     score = prReadiness.score,
-                    title = "PR Readiness Score",
+                    title = "Ship Readiness Score",
                     summary = prReadiness.summary,
                     chips = buildList {
                         if (prReadiness.readyItems.isNotEmpty()) add("${prReadiness.readyItems.size} ready")

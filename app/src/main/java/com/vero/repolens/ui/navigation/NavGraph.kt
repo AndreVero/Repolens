@@ -327,7 +327,7 @@ fun RepoLensNavGraph(
                         )
                     } else {
                         ErrorState(
-                            message = "No PR readiness information available",
+                            message = "No ship readiness information available",
                             onRetry = { navController.popBackStack() }
                         )
                     }
