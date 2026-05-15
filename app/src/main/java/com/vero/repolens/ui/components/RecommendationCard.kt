@@ -1,16 +1,50 @@
 package com.vero.repolens.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.HourglassFull
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.PriorityHigh
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.vero.repolens.data.models.*
+import com.vero.repolens.data.models.EffortLevel
+import com.vero.repolens.data.models.ImpactLevel
+import com.vero.repolens.data.models.SmartRecommendation
 
 @Composable
 fun RecommendationCard(
@@ -28,7 +62,6 @@ fun RecommendationCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -46,8 +79,8 @@ fun RecommendationCard(
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                </Column>
-                
+                }
+
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = if (expanded) "Collapse" else "Expand"
@@ -56,31 +89,28 @@ fun RecommendationCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Impact and Effort chips
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AssistChip(
-                    onClick = { },
+                    onClick = {},
                     label = { Text("Impact: ${recommendation.impact.name}") },
                     leadingIcon = {
                         Icon(
-                            imageVector = getImpactIcon(recommendation.impact),
+                            imageVector = impactIcon(recommendation.impact),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
                     },
                     colors = AssistChipDefaults.assistChipColors(
-                        containerColor = getImpactColor(recommendation.impact)
+                        containerColor = impactColor(recommendation.impact)
                     )
                 )
-                
+
                 AssistChip(
-                    onClick = { },
+                    onClick = {},
                     label = { Text("Effort: ${recommendation.effort.name}") },
                     leadingIcon = {
                         Icon(
-                            imageVector = getEffortIcon(recommendation.effort),
+                            imageVector = effortIcon(recommendation.effort),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -88,7 +118,6 @@ fun RecommendationCard(
                 )
             }
 
-            // Expanded content
             AnimatedVisibility(visible = expanded) {
                 Column(
                     modifier = Modifier
@@ -96,13 +125,11 @@ fun RecommendationCard(
                         .padding(top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Description
                     Text(
                         text = recommendation.description,
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    // Reasoning
                     Card(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -139,7 +166,6 @@ fun RecommendationCard(
                         }
                     }
 
-                    // Code example
                     recommendation.codeExample?.let { code ->
                         Card(
                             colors = CardDefaults.cardColors(
@@ -170,16 +196,15 @@ fun RecommendationCard(
                                 Text(
                                     text = code,
                                     style = MaterialTheme.typography.bodySmall,
-                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                    fontFamily = FontFamily.Monospace
                                 )
                             }
                         }
                     }
 
-                    // Learn more link
-                    recommendation.learnMoreUrl?.let { url ->
+                    recommendation.learnMoreUrl?.let {
                         TextButton(
-                            onClick = { /* Open URL */ },
+                            onClick = {},
                             modifier = Modifier.align(Alignment.End)
                         ) {
                             Icon(
@@ -198,19 +223,19 @@ fun RecommendationCard(
 }
 
 @Composable
-private fun getImpactColor(impact: ImpactLevel) = when (impact) {
+private fun impactColor(impact: ImpactLevel): Color = when (impact) {
     ImpactLevel.HIGH -> MaterialTheme.colorScheme.errorContainer
     ImpactLevel.MEDIUM -> MaterialTheme.colorScheme.tertiaryContainer
     ImpactLevel.LOW -> MaterialTheme.colorScheme.secondaryContainer
 }
 
-private fun getImpactIcon(impact: ImpactLevel) = when (impact) {
+private fun impactIcon(impact: ImpactLevel): ImageVector = when (impact) {
     ImpactLevel.HIGH -> Icons.Default.PriorityHigh
     ImpactLevel.MEDIUM -> Icons.Default.Remove
     ImpactLevel.LOW -> Icons.Default.ArrowDownward
 }
 
-private fun getEffortIcon(effort: EffortLevel) = when (effort) {
+private fun effortIcon(effort: EffortLevel): ImageVector = when (effort) {
     EffortLevel.LARGE -> Icons.Default.HourglassFull
     EffortLevel.MEDIUM -> Icons.Default.HourglassEmpty
     EffortLevel.SMALL -> Icons.Default.Speed

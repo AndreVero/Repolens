@@ -422,7 +422,7 @@ data class BobUsage(
 @Serializable
 data class BobIdeSession(
     val title: String,
-    val expectedExportPath: String? = null
+    val expectedExportPath: String? = null)
 
 @Serializable
 data class PerformanceMetrics(
@@ -491,7 +491,6 @@ data class DiagramConnection(
     val from: String,
     val to: String,
     val label: String
-)
 )
 
 // Made with Bob

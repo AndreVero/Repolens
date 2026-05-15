@@ -9,9 +9,25 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.vero.repolens.data.models.SearchItemType
 import com.vero.repolens.ui.components.ErrorState
 import com.vero.repolens.ui.components.LoadingState
-import com.vero.repolens.ui.screens.*
+import com.vero.repolens.ui.screens.ActionItemsScreen
+import com.vero.repolens.ui.screens.ArchitectureScreen
+import com.vero.repolens.ui.screens.ConcurrencyScreen
+import com.vero.repolens.ui.screens.DependencyInjectionScreen
+import com.vero.repolens.ui.screens.FeatureDetailScreen
+import com.vero.repolens.ui.screens.FeaturesScreen
+import com.vero.repolens.ui.screens.ModuleDetailScreen
+import com.vero.repolens.ui.screens.ModulesScreen
+import com.vero.repolens.ui.screens.OverviewScreen
+import com.vero.repolens.ui.screens.PerformanceScreen
+import com.vero.repolens.ui.screens.PrReadinessScreen
+import com.vero.repolens.ui.screens.RecommendationsScreen
+import com.vero.repolens.ui.screens.RisksScreen
+import com.vero.repolens.ui.screens.SearchScreen
+import com.vero.repolens.ui.screens.TestingScreen
+import com.vero.repolens.ui.screens.UiLayerScreen
 import com.vero.repolens.viewmodel.RepoLensViewModel
 import com.vero.repolens.viewmodel.UiState
 
@@ -35,48 +51,20 @@ fun RepoLensNavGraph(
                 )
                 is UiState.Success -> OverviewScreen(
                     report = state.report,
-                    onNavigateToArchitecture = {
-                        navController.navigate(NavRoutes.ARCHITECTURE)
-                    },
-                    onNavigateToModules = {
-                        navController.navigate(NavRoutes.MODULES)
-                    },
-                    onNavigateToFeatures = {
-                        navController.navigate(NavRoutes.FEATURES)
-                    },
-                    onNavigateToDI = {
-                        navController.navigate(NavRoutes.DEPENDENCY_INJECTION)
-                    },
-                    onNavigateToUI = {
-                        navController.navigate(NavRoutes.UI_LAYER)
-                    },
-                    onNavigateToConcurrency = {
-                        navController.navigate(NavRoutes.CONCURRENCY)
-                    },
-                    onNavigateToTesting = {
-                        navController.navigate(NavRoutes.TESTING)
-                    },
-                    onNavigateToRisks = {
-                        navController.navigate(NavRoutes.RISKS)
-                    },
-                    onNavigateToPR = {
-                        navController.navigate(NavRoutes.PR_READINESS)
-                    },
-                    onNavigateToSearch = {
-                        navController.navigate(NavRoutes.SEARCH)
-                    },
-                    onNavigateToActionItems = {
-                        navController.navigate(NavRoutes.ACTION_ITEMS)
-                    },
-                    onNavigateToPerformance = {
-                        navController.navigate(NavRoutes.PERFORMANCE)
-                    },
-                    onNavigateToRecommendations = {
-                        navController.navigate(NavRoutes.RECOMMENDATIONS)
-                    },
-                    onNavigateToExport = {
-                        // Export handled by dialog
-                    }
+                    onNavigateToArchitecture = { navController.navigate(NavRoutes.ARCHITECTURE) },
+                    onNavigateToModules = { navController.navigate(NavRoutes.MODULES) },
+                    onNavigateToFeatures = { navController.navigate(NavRoutes.FEATURES) },
+                    onNavigateToDI = { navController.navigate(NavRoutes.DEPENDENCY_INJECTION) },
+                    onNavigateToUI = { navController.navigate(NavRoutes.UI_LAYER) },
+                    onNavigateToConcurrency = { navController.navigate(NavRoutes.CONCURRENCY) },
+                    onNavigateToTesting = { navController.navigate(NavRoutes.TESTING) },
+                    onNavigateToRisks = { navController.navigate(NavRoutes.RISKS) },
+                    onNavigateToPR = { navController.navigate(NavRoutes.PR_READINESS) },
+                    onNavigateToSearch = { navController.navigate(NavRoutes.SEARCH) },
+                    onNavigateToActionItems = { navController.navigate(NavRoutes.ACTION_ITEMS) },
+                    onNavigateToPerformance = { navController.navigate(NavRoutes.PERFORMANCE) },
+                    onNavigateToRecommendations = { navController.navigate(NavRoutes.RECOMMENDATIONS) },
+                    onNavigateToExport = {}
                 )
             }
         }
@@ -85,36 +73,25 @@ fun RepoLensNavGraph(
             SearchScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onItemClick = { item ->
-                    // Navigate to appropriate detail screen based on item type
                     when (item.type) {
-                        com.vero.repolens.data.models.SearchItemType.MODULE -> {
-                            navController.navigate(NavRoutes.moduleDetail(item.id))
-                        }
-                        com.vero.repolens.data.models.SearchItemType.FEATURE -> {
-                            navController.navigate(NavRoutes.featureDetail(item.id))
-                        }
-                        com.vero.repolens.data.models.SearchItemType.RISK -> {
-                            navController.navigate(NavRoutes.RISKS)
-                        }
-                        else -> {
-                            // For other types, navigate to relevant screen
-                            navController.popBackStack()
-                        }
+                        SearchItemType.MODULE -> navController.navigate(NavRoutes.moduleDetail(item.id))
+                        SearchItemType.FEATURE -> navController.navigate(NavRoutes.featureDetail(item.id))
+                        SearchItemType.RISK -> navController.navigate(NavRoutes.RISKS)
+                        else -> navController.popBackStack()
                     }
                 }
             )
+        }
 
         composable(NavRoutes.ACTION_ITEMS) {
-            ActionItemsScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
+            ActionItemsScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(NavRoutes.ARCHITECTURE) {
             when (val state = uiState) {
                 is UiState.Success -> ArchitectureScreen(
                     architecture = state.report.architecture,
+                    diagram = state.report.architectureDiagram,
                     onNavigateBack = { navController.popBackStack() }
                 )
                 else -> LoadingState()
@@ -198,9 +175,10 @@ fun RepoLensNavGraph(
         composable(NavRoutes.DEPENDENCY_INJECTION) {
             when (val state = uiState) {
                 is UiState.Success -> {
-                    if (state.report.dependencyInjection != null) {
+                    val di = state.report.dependencyInjection
+                    if (di != null) {
                         DependencyInjectionScreen(
-                            di = state.report.dependencyInjection,
+                            di = di,
                             onNavigateBack = { navController.popBackStack() }
                         )
                     } else {
@@ -217,9 +195,10 @@ fun RepoLensNavGraph(
         composable(NavRoutes.CONCURRENCY) {
             when (val state = uiState) {
                 is UiState.Success -> {
-                    if (state.report.concurrency != null) {
+                    val concurrency = state.report.concurrency
+                    if (concurrency != null) {
                         ConcurrencyScreen(
-                            concurrency = state.report.concurrency,
+                            concurrency = concurrency,
                             onNavigateBack = { navController.popBackStack() }
                         )
                     } else {
@@ -236,9 +215,10 @@ fun RepoLensNavGraph(
         composable(NavRoutes.UI_LAYER) {
             when (val state = uiState) {
                 is UiState.Success -> {
-                    if (state.report.uiLayer != null) {
+                    val uiLayer = state.report.uiLayer
+                    if (uiLayer != null) {
                         UiLayerScreen(
-                            uiLayer = state.report.uiLayer,
+                            uiLayer = uiLayer,
                             onNavigateBack = { navController.popBackStack() }
                         )
                     } else {
@@ -255,9 +235,10 @@ fun RepoLensNavGraph(
         composable(NavRoutes.TESTING) {
             when (val state = uiState) {
                 is UiState.Success -> {
-                    if (state.report.testing != null) {
+                    val testing = state.report.testing
+                    if (testing != null) {
                         TestingScreen(
-                            testing = state.report.testing,
+                            testing = testing,
                             onNavigateBack = { navController.popBackStack() }
                         )
                     } else {
@@ -284,21 +265,30 @@ fun RepoLensNavGraph(
         composable(NavRoutes.PR_READINESS) {
             when (val state = uiState) {
                 is UiState.Success -> {
-                    if (state.report.prReadiness != null) {
+                    val prReadiness = state.report.prReadiness
+                    if (prReadiness != null) {
                         PrReadinessScreen(
-                            prReadiness = state.report.prReadiness,
+                            prReadiness = prReadiness,
                             onNavigateBack = { navController.popBackStack() }
                         )
                     } else {
                         ErrorState(
                             message = "No PR readiness information available",
                             onRetry = { navController.popBackStack() }
+                        )
+                    }
+                }
+                else -> LoadingState()
+            }
+        }
+
         composable(NavRoutes.PERFORMANCE) {
             when (val state = uiState) {
                 is UiState.Success -> {
-                    if (state.report.performanceMetrics != null) {
+                    val performance = state.report.performance
+                    if (performance != null) {
                         PerformanceScreen(
-                            metrics = state.report.performanceMetrics,
+                            performance = performance,
                             onNavigateBack = { navController.popBackStack() }
                         )
                     } else {
@@ -313,18 +303,7 @@ fun RepoLensNavGraph(
         }
 
         composable(NavRoutes.RECOMMENDATIONS) {
-            when (val state = uiState) {
-                is UiState.Success -> RecommendationsScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-                else -> LoadingState()
-            }
-        }
-                        )
-                    }
-                }
-                else -> LoadingState()
-            }
+            RecommendationsScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

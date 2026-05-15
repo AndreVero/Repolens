@@ -267,6 +267,8 @@ private fun DrawScope.drawConnection(
 fun DiagramLegend(
     modifier: Modifier = Modifier
 ) {
+    val dependencyColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+
     Column(
         modifier = modifier
             .padding(16.dp),
@@ -297,7 +299,7 @@ fun DiagramLegend(
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     drawLine(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        color = dependencyColor,
                         start = Offset(0f, size.height / 2),
                         end = Offset(size.width, size.height / 2),
                         strokeWidth = 2f

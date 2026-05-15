@@ -9,6 +9,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,14 +40,11 @@ fun OverviewScreen(
     onNavigateToRecommendations: () -> Unit = {},
     onNavigateToExport: () -> Unit = {}
 ) {
-    var showExportDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showExportDialog by remember { mutableStateOf(false) }
     if (showExportDialog) {
         ExportDialog(
+            report = report,
             onDismiss = { showExportDialog = false },
-            onExport = { format ->
-                showExportDialog = false
-                onNavigateToExport()
-            }
         )
     }
 
@@ -284,11 +285,11 @@ fun OverviewScreen(
                 )
             }
 
-            if (report.performanceMetrics != null) {
+            if (report.performance != null) {
                 item {
                     SectionCard(
                         title = "Performance Metrics",
-                        subtitle = "Build time: ${report.performanceMetrics.buildTimeSeconds}s",
+                        subtitle = "Build time: ${report.performance.buildTimeSeconds}s",
                         icon = Icons.Default.Speed,
                         onClick = onNavigateToPerformance
                     )

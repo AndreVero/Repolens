@@ -20,24 +20,29 @@ class RecommendationsViewModel @Inject constructor(
     private val _recommendations = MutableStateFlow<List<SmartRecommendation>>(emptyList())
     val recommendations: StateFlow<List<SmartRecommendation>> = _recommendations.asStateFlow()
 
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
+
     private val _filterImpact = MutableStateFlow<ImpactLevel?>(null)
-    val filterImpact: StateFlow<ImpactLevel?> = _filterImpact.asStateFlow()
+    val selectedImpact: StateFlow<ImpactLevel?> = _filterImpact.asStateFlow()
 
     private val _filterEffort = MutableStateFlow<EffortLevel?>(null)
-    val filterEffort: StateFlow<EffortLevel?> = _filterEffort.asStateFlow()
+    val selectedEffort: StateFlow<EffortLevel?> = _filterEffort.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     val filteredRecommendations: StateFlow<List<SmartRecommendation>> = combine(
         _recommendations,
+        _selectedCategory,
         _filterImpact,
         _filterEffort
-    ) { recs, impact, effort ->
+    ) { recs, category, impact, effort ->
         recs.filter { rec ->
+            val categoryMatch = category == null || rec.category == category
             val impactMatch = impact == null || rec.impact == impact
             val effortMatch = effort == null || rec.effort == effort
-            impactMatch && effortMatch
+            categoryMatch && impactMatch && effortMatch
         }
     }.stateIn(
         scope = viewModelScope,
@@ -65,7 +70,15 @@ class RecommendationsViewModel @Inject constructor(
         }
     }
 
+    fun setCategory(category: String?) {
+        _selectedCategory.value = category
+    }
+
     fun setImpactFilter(impact: ImpactLevel?) {
+        _filterImpact.value = impact
+    }
+
+    fun setImpact(impact: ImpactLevel?) {
         _filterImpact.value = impact
     }
 
@@ -73,7 +86,12 @@ class RecommendationsViewModel @Inject constructor(
         _filterEffort.value = effort
     }
 
+    fun setEffort(effort: EffortLevel?) {
+        _filterEffort.value = effort
+    }
+
     fun clearFilters() {
+        _selectedCategory.value = null
         _filterImpact.value = null
         _filterEffort.value = null
     }

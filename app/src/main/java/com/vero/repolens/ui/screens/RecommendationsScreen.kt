@@ -22,7 +22,7 @@ fun RecommendationsScreen(
     onNavigateBack: () -> Unit,
     viewModel: RecommendationsViewModel = hiltViewModel()
 ) {
-    val recommendations by viewModel.recommendations.collectAsState()
+    val recommendations by viewModel.filteredRecommendations.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val selectedImpact by viewModel.selectedImpact.collectAsState()
     val selectedEffort by viewModel.selectedEffort.collectAsState()

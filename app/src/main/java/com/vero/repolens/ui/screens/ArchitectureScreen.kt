@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.vero.repolens.data.models.Architecture
+import com.vero.repolens.data.models.ArchitectureDiagram
 import com.vero.repolens.data.models.DiagramNode
 import com.vero.repolens.ui.components.*
 
@@ -18,6 +19,7 @@ import com.vero.repolens.ui.components.*
 @Composable
 fun ArchitectureScreen(
     architecture: Architecture,
+    diagram: ArchitectureDiagram? = null,
     onNavigateBack: () -> Unit
 ) {
     var showDiagram by remember { mutableStateOf(false) }
@@ -33,7 +35,7 @@ fun ArchitectureScreen(
                     }
                 },
                 actions = {
-                    if (architecture.diagram != null) {
+                    if (diagram != null) {
                         IconButton(onClick = { showDiagram = !showDiagram }) {
                             Icon(
                                 imageVector = if (showDiagram) Icons.Default.List else Icons.Default.AccountTree,
@@ -45,7 +47,7 @@ fun ArchitectureScreen(
             )
         }
     ) { paddingValues ->
-        if (showDiagram && architecture.diagram != null) {
+        if (showDiagram && diagram != null) {
             // Diagram view
             Column(
                 modifier = Modifier
@@ -59,7 +61,7 @@ fun ArchitectureScreen(
                         .weight(1f)
                 ) {
                     ArchitectureDiagram(
-                        diagram = architecture.diagram,
+                        diagram = diagram,
                         onNodeTap = { node ->
                             selectedNode = node
                         }
