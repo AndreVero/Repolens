@@ -116,6 +116,7 @@ fun SectionCard(
 @Composable
 fun SeverityBadge(
     severity: String,
+    label: String? = null,
     modifier: Modifier = Modifier
 ) {
     val (color, textColor) = when (severity.lowercase()) {
@@ -132,7 +133,7 @@ fun SeverityBadge(
         color = color
     ) {
         Text(
-            text = severity.uppercase(),
+            text = label?.let { "$it: ${severity.uppercase()}" } ?: severity.uppercase(),
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
@@ -144,6 +145,7 @@ fun SeverityBadge(
 @Composable
 fun ComplexityBadge(
     complexity: String,
+    label: String? = null,
     modifier: Modifier = Modifier
 ) {
     val (color, textColor) = when (complexity.lowercase()) {
@@ -159,7 +161,7 @@ fun ComplexityBadge(
         color = color
     ) {
         Text(
-            text = complexity.uppercase(),
+            text = label?.let { "$it: ${complexity.uppercase()}" } ?: complexity.uppercase(),
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
@@ -171,6 +173,7 @@ fun ComplexityBadge(
 @Composable
 fun ConfidenceBadge(
     confidence: Double,
+    label: String? = null,
     modifier: Modifier = Modifier
 ) {
     val percentage = (confidence * 100).toInt()
@@ -186,7 +189,7 @@ fun ConfidenceBadge(
         color = color
     ) {
         Text(
-            text = "$percentage% CONFIDENCE",
+            text = label?.let { "$it: $percentage%" } ?: "$percentage% CONFIDENCE",
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,

@@ -1,6 +1,7 @@
 package com.vero.repolens.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
@@ -25,6 +28,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +60,7 @@ import com.vero.repolens.data.models.Testing
 import com.vero.repolens.data.models.UiLayer
 import com.vero.repolens.ui.components.FilePathChip
 import com.vero.repolens.ui.components.SeverityBadge
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,9 +91,16 @@ fun TestingScreen(
             }
 
             if (testing.existingTests.isNotEmpty()) {
-                item { ScreenSectionTitle("Existing Tests") }
-                items(testing.existingTests) { test ->
-                    ExistingTestCard(test = test)
+                item {
+                    ScreenSectionTitle("Existing Tests")
+                }
+                item {
+                    PagerSection(
+                        items = testing.existingTests,
+                        titleFor = { it.name }
+                    ) { test ->
+                        ExistingTestCard(test = test, embedded = true)
+                    }
                 }
             }
 
@@ -244,15 +257,22 @@ fun DependencyInjectionScreen(
             }
 
             if (di.modules.isNotEmpty()) {
-                item { ScreenSectionTitle("DI Modules") }
-                items(di.modules) { module ->
-                    DetailSectionCard(title = module.name) {
-                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            module.scope?.let {
-                                DetailChip("Scope: $it")
-                            }
-                            if (module.provides.isNotEmpty()) {
-                                FeatureLikeTagCloud(module.provides)
+                item {
+                    ScreenSectionTitle("DI Modules")
+                }
+                item {
+                    PagerSection(
+                        items = di.modules,
+                        titleFor = { it.name }
+                    ) { module ->
+                        DetailSectionCard(title = module.name, embedded = true) {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                module.scope?.let {
+                                    DetailChip("Scope: $it")
+                                }
+                                if (module.provides.isNotEmpty()) {
+                                    FeatureLikeTagCloud(module.provides)
+                                }
                             }
                         }
                     }
@@ -293,16 +313,30 @@ fun ConcurrencyScreen(
             }
 
             if (concurrency.dispatchers.isNotEmpty()) {
-                item { ScreenSectionTitle("Dispatchers") }
-                items(concurrency.dispatchers) { dispatcher ->
-                    DispatcherCard(dispatcher = dispatcher)
+                item {
+                    ScreenSectionTitle("Dispatchers")
+                }
+                item {
+                    PagerSection(
+                        items = concurrency.dispatchers,
+                        titleFor = { it.name }
+                    ) { dispatcher ->
+                        DispatcherCard(dispatcher = dispatcher, embedded = true)
+                    }
                 }
             }
 
             if (concurrency.flows.isNotEmpty()) {
-                item { ScreenSectionTitle("Flows") }
-                items(concurrency.flows) { flow ->
-                    FlowInfoCard(flow = flow)
+                item {
+                    ScreenSectionTitle("Flows")
+                }
+                item {
+                    PagerSection(
+                        items = concurrency.flows,
+                        titleFor = { it.name }
+                    ) { flow ->
+                        FlowInfoCard(flow = flow, embedded = true)
+                    }
                 }
             }
 
@@ -397,9 +431,16 @@ fun UiLayerScreen(
             }
 
             if (uiLayer.screens.isNotEmpty()) {
-                item { ScreenSectionTitle("Screens (${uiLayer.screens.size})") }
-                items(uiLayer.screens) { screen ->
-                    UiScreenCard(screen = screen)
+                item {
+                    ScreenSectionTitle("Screens (${uiLayer.screens.size})")
+                }
+                item {
+                    PagerSection(
+                        items = uiLayer.screens,
+                        titleFor = { it.name }
+                    ) { screen ->
+                        UiScreenCard(screen = screen, embedded = true)
+                    }
                 }
             }
 
@@ -625,6 +666,69 @@ private fun ScoreHeroCard(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun <T> PagerSection(
+    items: List<T>,
+    titleFor: (T) -> String,
+    pageContent: @Composable (T) -> Unit
+) {
+    val pagerState = rememberPagerState(pageCount = { items.size })
+    val coroutineScope = rememberCoroutineScope()
+
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items.forEachIndexed { index, item ->
+                FilterChip(
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    label = {
+                        Text(
+                            text = titleFor(item),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                )
+            }
+        }
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth()
+        ) { page ->
+            pageContent(items[page])
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            items.indices.forEach { index ->
+                val selected = pagerState.currentPage == index
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .size(width = if (selected) 20.dp else 8.dp, height = 8.dp),
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.28f)
+                    },
+                    shape = MaterialTheme.shapes.small
+                ) {}
+            }
+        }
+    }
+}
+
 @Composable
 private fun ScreenSectionTitle(text: String) {
     Text(
@@ -638,13 +742,21 @@ private fun ScreenSectionTitle(text: String) {
 @Composable
 private fun DetailSectionCard(
     title: String,
+    embedded: Boolean = false,
     content: @Composable () -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (embedded) {
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.24f)),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = if (embedded) 0.16f else 0.24f)
+        ),
         shape = MaterialTheme.shapes.extraLarge
     ) {
         Column(
@@ -664,8 +776,11 @@ private fun DetailSectionCard(
 }
 
 @Composable
-private fun ExistingTestCard(test: ExistingTest) {
-    DetailSectionCard(title = test.name) {
+private fun ExistingTestCard(
+    test: ExistingTest,
+    embedded: Boolean = false
+) {
+    DetailSectionCard(title = test.name, embedded = embedded) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -724,8 +839,11 @@ private fun MissingTestAreaCard(area: MissingTestArea) {
 }
 
 @Composable
-private fun DispatcherCard(dispatcher: Dispatcher) {
-    DetailSectionCard(title = dispatcher.name) {
+private fun DispatcherCard(
+    dispatcher: Dispatcher,
+    embedded: Boolean = false
+) {
+    DetailSectionCard(title = dispatcher.name, embedded = embedded) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
                 text = dispatcher.usage,
@@ -748,8 +866,11 @@ private fun DispatcherCard(dispatcher: Dispatcher) {
 }
 
 @Composable
-private fun FlowInfoCard(flow: FlowInfo) {
-    DetailSectionCard(title = flow.name) {
+private fun FlowInfoCard(
+    flow: FlowInfo,
+    embedded: Boolean = false
+) {
+    DetailSectionCard(title = flow.name, embedded = embedded) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -773,8 +894,11 @@ private fun FlowInfoCard(flow: FlowInfo) {
 }
 
 @Composable
-private fun UiScreenCard(screen: Screen) {
-    DetailSectionCard(title = screen.name) {
+private fun UiScreenCard(
+    screen: Screen,
+    embedded: Boolean = false
+) {
+    DetailSectionCard(title = screen.name, embedded = embedded) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

@@ -25,6 +25,7 @@ import com.vero.repolens.ui.screens.ArchitectureScreen
 import com.vero.repolens.ui.screens.ConcurrencyScreen
 import com.vero.repolens.ui.screens.DependencyInjectionScreen
 import com.vero.repolens.ui.screens.FeatureDetailScreen
+import com.vero.repolens.ui.screens.FeatureVisualizerScreen
 import com.vero.repolens.ui.screens.FeaturesScreen
 import com.vero.repolens.ui.screens.IntroScreen
 import com.vero.repolens.ui.screens.ModuleDetailScreen
@@ -181,7 +182,38 @@ fun RepoLensNavGraph(
                     if (feature != null) {
                         FeatureDetailScreen(
                             feature = feature,
-                            onNavigateBack = { navController.popBackStack() }
+                            onNavigateBack = { navController.popBackStack() },
+                            onOpenVisualizer = {
+                                navController.navigate(NavRoutes.featureVisualizer(feature.id))
+                            }
+                        )
+                    } else {
+                        ErrorState(
+                            message = "Feature not found",
+                            onRetry = { navController.popBackStack() }
+                        )
+                    }
+                }
+                else -> LoadingState()
+            }
+        }
+
+        repolensComposable(
+            route = NavRoutes.FEATURE_VISUALIZER,
+            arguments = listOf(navArgument("featureId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val featureId = backStackEntry.arguments?.getString("featureId")
+            when (val state = uiState) {
+                is UiState.Success -> {
+                    val feature = state.report.features.find { it.id == featureId }
+                    if (feature != null) {
+                        FeatureVisualizerScreen(
+                            report = state.report,
+                            feature = feature,
+                            onNavigateBack = { navController.popBackStack() },
+                            onNavigateToModule = { moduleId ->
+                                navController.navigate(NavRoutes.moduleDetail(moduleId))
+                            }
                         )
                     } else {
                         ErrorState(

@@ -188,7 +188,10 @@ private fun FeatureCard(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    SeverityBadge(severity = feature.riskLevel)
+                    SeverityBadge(
+                        severity = feature.riskLevel,
+                        label = "Risk"
+                    )
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
@@ -209,16 +212,22 @@ private fun FeatureCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                ComplexityBadge(complexity = feature.complexity)
-                ConfidenceBadge(confidence = feature.confidence)
+                ComplexityBadge(
+                    complexity = feature.complexity,
+                    label = "Complexity"
+                )
+                ConfidenceBadge(
+                    confidence = feature.confidence,
+                    label = "Confidence"
+                )
                 if (feature.viewModels.isNotEmpty()) {
-                    FeatureInfoChip("${feature.viewModels.size} viewmodels")
+                    FeatureInfoChip("${feature.viewModels.size} ViewModels")
                 }
                 if (feature.useCases.isNotEmpty()) {
                     FeatureInfoChip("${feature.useCases.size} use cases")
                 }
                 if (feature.repositories.isNotEmpty()) {
-                    FeatureInfoChip("${feature.repositories.size} repos")
+                    FeatureInfoChip("${feature.repositories.size} repositories")
                 }
             }
 

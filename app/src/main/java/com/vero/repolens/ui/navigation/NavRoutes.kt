@@ -9,6 +9,7 @@ object NavRoutes {
     const val MODULE_DETAIL = "module_detail/{moduleId}"
     const val FEATURES = "features"
     const val FEATURE_DETAIL = "feature_detail/{featureId}"
+    const val FEATURE_VISUALIZER = "feature_visualizer/{featureId}"
     const val DEPENDENCY_INJECTION = "dependency_injection"
     const val CONCURRENCY = "concurrency"
     const val UI_LAYER = "ui_layer"
@@ -21,6 +22,7 @@ object NavRoutes {
     
     fun moduleDetail(moduleId: String) = "module_detail/$moduleId"
     fun featureDetail(featureId: String) = "feature_detail/$featureId"
+    fun featureVisualizer(featureId: String) = "feature_visualizer/$featureId"
 }
 
 // Made with Bob

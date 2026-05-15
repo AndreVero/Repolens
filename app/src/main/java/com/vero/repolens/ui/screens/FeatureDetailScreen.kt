@@ -1,6 +1,7 @@
 package com.vero.repolens.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -9,8 +10,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
@@ -21,12 +25,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,12 +48,20 @@ import com.vero.repolens.ui.components.ComplexityBadge
 import com.vero.repolens.ui.components.ConfidenceBadge
 import com.vero.repolens.ui.components.FilePathChip
 import com.vero.repolens.ui.components.SeverityBadge
+import kotlinx.coroutines.launch
+
+private enum class FeatureImplementationPage(val title: String) {
+    ARCHITECTURE("Architecture"),
+    UI("UI Components"),
+    STATE("State Model")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeatureDetailScreen(
     feature: Feature,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onOpenVisualizer: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -71,7 +87,10 @@ fun FeatureDetailScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                FeatureHeroCard(feature = feature)
+                FeatureHeroCard(
+                    feature = feature,
+                    onOpenVisualizer = onOpenVisualizer
+                )
             }
 
             item {
@@ -97,36 +116,12 @@ fun FeatureDetailScreen(
             if (
                 feature.viewModels.isNotEmpty() ||
                 feature.useCases.isNotEmpty() ||
-                feature.repositories.isNotEmpty()
+                feature.repositories.isNotEmpty() ||
+                feature.uiComponents.isNotEmpty() ||
+                feature.stateModel != null
             ) {
                 item {
-                    FeatureSectionCard(title = "Architecture Components") {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            if (feature.viewModels.isNotEmpty()) {
-                                FeatureTagGroup(title = "ViewModels", items = feature.viewModels)
-                            }
-                            if (feature.useCases.isNotEmpty()) {
-                                FeatureTagGroup(title = "Use Cases", items = feature.useCases)
-                            }
-                            if (feature.repositories.isNotEmpty()) {
-                                FeatureTagGroup(title = "Repositories", items = feature.repositories)
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (feature.uiComponents.isNotEmpty()) {
-                item {
-                    FeatureSectionCard(title = "UI Components") {
-                        FeatureTagCloud(feature.uiComponents)
-                    }
-                }
-            }
-
-            feature.stateModel?.let { stateModel ->
-                item {
-                    StateModelCard(stateModel = stateModel)
+                    FeatureImplementationPager(feature = feature)
                 }
             }
 
@@ -158,8 +153,134 @@ fun FeatureDetailScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun FeatureHeroCard(feature: Feature) {
+private fun FeatureImplementationPager(feature: Feature) {
+    val pages = remember(feature) {
+        buildList {
+            if (
+                feature.viewModels.isNotEmpty() ||
+                feature.useCases.isNotEmpty() ||
+                feature.repositories.isNotEmpty()
+            ) {
+                add(FeatureImplementationPage.ARCHITECTURE)
+            }
+            if (feature.uiComponents.isNotEmpty()) {
+                add(FeatureImplementationPage.UI)
+            }
+            if (feature.stateModel != null) {
+                add(FeatureImplementationPage.STATE)
+            }
+        }
+    }
+    val pagerState = rememberPagerState(pageCount = { pages.size })
+    val coroutineScope = rememberCoroutineScope()
+
+    FeatureSectionCard(title = "Implementation View") {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                pages.forEachIndexed { index, page ->
+                    FilterChip(
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
+                        label = { Text(page.title) }
+                    )
+                }
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth()
+            ) { pageIndex ->
+                when (pages[pageIndex]) {
+                    FeatureImplementationPage.ARCHITECTURE -> ArchitectureComponentsPage(feature = feature)
+                    FeatureImplementationPage.UI -> UiComponentsPage(feature = feature)
+                    FeatureImplementationPage.STATE -> StateModelPage(stateModel = feature.stateModel)
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                pages.indices.forEach { index ->
+                    val selected = pagerState.currentPage == index
+                    Surface(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .size(width = if (selected) 20.dp else 8.dp, height = 8.dp),
+                        color = if (selected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.28f)
+                        },
+                        shape = MaterialTheme.shapes.small
+                    ) {}
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchitectureComponentsPage(feature: Feature) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (feature.viewModels.isNotEmpty()) {
+            FeatureTagGroup(title = "ViewModels", items = feature.viewModels)
+        }
+        if (feature.useCases.isNotEmpty()) {
+            FeatureTagGroup(title = "Use Cases", items = feature.useCases)
+        }
+        if (feature.repositories.isNotEmpty()) {
+            FeatureTagGroup(title = "Repositories", items = feature.repositories)
+        }
+    }
+}
+
+@Composable
+private fun UiComponentsPage(feature: Feature) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Reusable and screen-level UI pieces connected to this feature.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        FeatureTagCloud(feature.uiComponents)
+    }
+}
+
+@Composable
+private fun StateModelPage(stateModel: StateModel?) {
+    if (stateModel == null) return
+
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        stateModel.stateClass?.let {
+            DetailChip("State class: $it")
+        }
+        if (stateModel.states.isNotEmpty()) {
+            FeatureTagGroup(title = "States", items = stateModel.states)
+        }
+        if (stateModel.events.isNotEmpty()) {
+            FeatureTagGroup(title = "Events", items = stateModel.events)
+        }
+        if (stateModel.sideEffects.isNotEmpty()) {
+            FeatureTagGroup(title = "Side Effects", items = stateModel.sideEffects)
+        }
+    }
+}
+
+@Composable
+private fun FeatureHeroCard(
+    feature: Feature,
+    onOpenVisualizer: () -> Unit
+) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.92f)
@@ -218,18 +339,38 @@ private fun FeatureHeroCard(feature: Feature) {
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
 
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ComplexityBadge(complexity = feature.complexity)
-                ConfidenceBadge(confidence = feature.confidence)
-                if (feature.navigationRoutes.isNotEmpty()) {
-                    DetailChip("${feature.navigationRoutes.size} routes")
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ComplexityBadge(
+                        complexity = feature.complexity,
+                        label = "Complexity"
+                    )
+                    ConfidenceBadge(
+                        confidence = feature.confidence,
+                        label = "Confidence"
+                    )
                 }
-                if (feature.analyticsEvents.isNotEmpty()) {
-                    DetailChip("${feature.analyticsEvents.size} analytics")
+
+                if (feature.navigationRoutes.isNotEmpty() || feature.analyticsEvents.isNotEmpty()) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (feature.navigationRoutes.isNotEmpty()) {
+                            DetailChip("${feature.navigationRoutes.size} routes")
+                        }
+                        if (feature.analyticsEvents.isNotEmpty()) {
+                            DetailChip("${feature.analyticsEvents.size} analytics")
+                        }
+                    }
                 }
+            }
+
+            Button(onClick = onOpenVisualizer) {
+                Text("Open Visualizer")
             }
         }
     }
