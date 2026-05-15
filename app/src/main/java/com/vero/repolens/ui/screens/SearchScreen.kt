@@ -59,6 +59,9 @@ import com.vero.repolens.data.models.SearchableItem
 import com.vero.repolens.ui.components.LoadingState
 import com.vero.repolens.viewmodel.SearchViewModel
 
+private val SearchFieldShape = RoundedCornerShape(18.dp)
+private val SearchFilterChipShape = RoundedCornerShape(18.dp)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
@@ -176,7 +179,8 @@ private fun SearchFieldCard(
                     }
                 }
             },
-            singleLine = true
+            singleLine = true,
+            shape = SearchFieldShape
         )
     }
 }
@@ -225,7 +229,8 @@ private fun FilterGroupCard(
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
-                            }
+                            },
+                            shape = SearchFilterChipShape
                         )
                     }
                 }
@@ -243,7 +248,8 @@ private fun FilterGroupCard(
                             FilterChip(
                                 selected = activeFilter.severities.contains(severity),
                                 onClick = { onSeverityToggle(severity) },
-                                label = { Text(severity) }
+                                label = { Text(severity) },
+                                shape = SearchFilterChipShape
                             )
                         }
                     }

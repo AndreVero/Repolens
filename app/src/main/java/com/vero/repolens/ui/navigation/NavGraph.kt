@@ -1,11 +1,19 @@
 package com.vero.repolens.ui.navigation
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -32,6 +40,8 @@ import com.vero.repolens.ui.screens.UiLayerScreen
 import com.vero.repolens.viewmodel.RepoLensViewModel
 import com.vero.repolens.viewmodel.UiState
 
+private const val NavigationDurationMs = 280
+
 @Composable
 fun RepoLensNavGraph(
     navController: NavHostController,
@@ -43,7 +53,7 @@ fun RepoLensNavGraph(
         navController = navController,
         startDestination = NavRoutes.INTRO
     ) {
-        composable(NavRoutes.INTRO) {
+        repolensComposable(NavRoutes.INTRO) {
             IntroScreen(
                 onContinue = {
                     viewModel.loadReport()
@@ -54,7 +64,7 @@ fun RepoLensNavGraph(
             )
         }
 
-        composable(NavRoutes.OVERVIEW) {
+        repolensComposable(NavRoutes.OVERVIEW) {
             when (val state = uiState) {
                 is UiState.Loading -> LoadingState()
                 is UiState.Error -> ErrorState(
@@ -81,7 +91,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.SEARCH) {
+        repolensComposable(NavRoutes.SEARCH) {
             SearchScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onItemClick = { item ->
@@ -95,11 +105,11 @@ fun RepoLensNavGraph(
             )
         }
 
-        composable(NavRoutes.ACTION_ITEMS) {
+        repolensComposable(NavRoutes.ACTION_ITEMS) {
             ActionItemsScreen(onNavigateBack = { navController.popBackStack() })
         }
 
-        composable(NavRoutes.ARCHITECTURE) {
+        repolensComposable(NavRoutes.ARCHITECTURE) {
             when (val state = uiState) {
                 is UiState.Success -> ArchitectureScreen(
                     architecture = state.report.architecture,
@@ -110,7 +120,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.MODULES) {
+        repolensComposable(NavRoutes.MODULES) {
             when (val state = uiState) {
                 is UiState.Success -> ModulesScreen(
                     modules = state.report.modules,
@@ -123,7 +133,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(
+        repolensComposable(
             route = NavRoutes.MODULE_DETAIL,
             arguments = listOf(navArgument("moduleId") { type = NavType.StringType })
         ) { backStackEntry ->
@@ -147,7 +157,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.FEATURES) {
+        repolensComposable(NavRoutes.FEATURES) {
             when (val state = uiState) {
                 is UiState.Success -> FeaturesScreen(
                     features = state.report.features,
@@ -160,7 +170,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(
+        repolensComposable(
             route = NavRoutes.FEATURE_DETAIL,
             arguments = listOf(navArgument("featureId") { type = NavType.StringType })
         ) { backStackEntry ->
@@ -184,7 +194,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.DEPENDENCY_INJECTION) {
+        repolensComposable(NavRoutes.DEPENDENCY_INJECTION) {
             when (val state = uiState) {
                 is UiState.Success -> {
                     val di = state.report.dependencyInjection
@@ -204,7 +214,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.CONCURRENCY) {
+        repolensComposable(NavRoutes.CONCURRENCY) {
             when (val state = uiState) {
                 is UiState.Success -> {
                     val concurrency = state.report.concurrency
@@ -224,7 +234,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.UI_LAYER) {
+        repolensComposable(NavRoutes.UI_LAYER) {
             when (val state = uiState) {
                 is UiState.Success -> {
                     val uiLayer = state.report.uiLayer
@@ -244,7 +254,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.TESTING) {
+        repolensComposable(NavRoutes.TESTING) {
             when (val state = uiState) {
                 is UiState.Success -> {
                     val testing = state.report.testing
@@ -264,7 +274,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.RISKS) {
+        repolensComposable(NavRoutes.RISKS) {
             when (val state = uiState) {
                 is UiState.Success -> RisksScreen(
                     risks = state.report.risks,
@@ -274,7 +284,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.PR_READINESS) {
+        repolensComposable(NavRoutes.PR_READINESS) {
             when (val state = uiState) {
                 is UiState.Success -> {
                     val prReadiness = state.report.prReadiness
@@ -294,7 +304,7 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.PERFORMANCE) {
+        repolensComposable(NavRoutes.PERFORMANCE) {
             when (val state = uiState) {
                 is UiState.Success -> {
                     val performance = state.report.performance
@@ -314,10 +324,48 @@ fun RepoLensNavGraph(
             }
         }
 
-        composable(NavRoutes.RECOMMENDATIONS) {
+        repolensComposable(NavRoutes.RECOMMENDATIONS) {
             RecommendationsScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
+}
+
+private fun NavGraphBuilder.repolensComposable(
+    route: String,
+    arguments: List<androidx.navigation.NamedNavArgument> = emptyList(),
+    content: @Composable (NavBackStackEntry) -> Unit
+) {
+    composable(
+        route = route,
+        arguments = arguments,
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(NavigationDurationMs)
+            ) + fadeIn(animationSpec = tween(NavigationDurationMs))
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { fullWidth -> -fullWidth / 4 },
+                animationSpec = tween(NavigationDurationMs)
+            ) + fadeOut(animationSpec = tween(NavigationDurationMs))
+        },
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { fullWidth -> -fullWidth / 3 },
+                animationSpec = tween(NavigationDurationMs)
+            ) + fadeIn(animationSpec = tween(NavigationDurationMs))
+        },
+        popExitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(NavigationDurationMs)
+            ) + fadeOut(animationSpec = tween(NavigationDurationMs))
+        },
+        content = { backStackEntry ->
+            content(backStackEntry)
+        }
+    )
 }
 
 // Made with Bob

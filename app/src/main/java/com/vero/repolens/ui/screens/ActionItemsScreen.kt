@@ -32,7 +32,6 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -94,16 +93,6 @@ fun ActionItemsScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    editingItem = null
-                    showEditorSheet = true
-                }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add action item")
-            }
         }
     ) { paddingValues ->
         Column(
@@ -177,7 +166,7 @@ fun ActionItemsScreen(
     }
 
     if (showEditorSheet || editingItem != null) {
-        ActionItemBottomSheet(
+        ActionItemEditorSheet(
             actionItem = editingItem,
             onDismiss = {
                 showEditorSheet = false
@@ -346,7 +335,7 @@ private fun EmptyActionItemsState(onAddClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ActionItemBottomSheet(
+fun ActionItemEditorSheet(
     actionItem: ActionItem?,
     onDismiss: () -> Unit,
     onSave: (String, String, Priority, ActionCategory) -> Unit

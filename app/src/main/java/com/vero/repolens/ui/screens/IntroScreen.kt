@@ -7,6 +7,7 @@ import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.CheckCircle
@@ -39,8 +41,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,7 +62,7 @@ import com.vero.repolens.ui.theme.InkTextMuted
 import com.vero.repolens.ui.theme.SandBackground
 import com.vero.repolens.viewmodel.IntroViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun IntroScreen(
     onContinue: () -> Unit,
@@ -66,6 +70,15 @@ fun IntroScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    val assetReports = uiState.assetReports
+    val selectedAssetIndex = remember(uiState.selectedSource, assetReports) {
+        val selectedAsset = uiState.selectedSource as? AssetReportSource
+        selectedAsset?.let(assetReports::indexOf)?.takeIf { it >= 0 } ?: 0
+    }
+    val pagerState = rememberPagerState(
+        initialPage = selectedAssetIndex,
+        pageCount = { assetReports.size }
+    )
 
     val documentLauncher = rememberLauncherForActivityResult(OpenDocument()) { uri ->
         if (uri != null) {
@@ -76,6 +89,21 @@ fun IntroScreen(
                 )
             }
             viewModel.selectDeviceFile(uri, resolveDisplayName(context, uri))
+        }
+    }
+
+    LaunchedEffect(selectedAssetIndex, assetReports.size) {
+        if (assetReports.isNotEmpty() && pagerState.currentPage != selectedAssetIndex) {
+            pagerState.animateScrollToPage(selectedAssetIndex)
+        }
+    }
+
+    LaunchedEffect(pagerState.currentPage, assetReports) {
+        if (assetReports.isNotEmpty()) {
+            val currentAsset = assetReports[pagerState.currentPage]
+            if (uiState.selectedSource != currentAsset) {
+                viewModel.selectAsset(currentAsset)
+            }
         }
     }
 
@@ -103,22 +131,22 @@ fun IntroScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
-                IntroHeaderCard(assetCount = uiState.assetReports.size)
+                IntroHeaderCard(assetCount = assetReports.size)
             }
 
-            item {
-                SectionLabel(text = "Bundled reports")
-            }
+            if (assetReports.isNotEmpty()) {
+                item {
+                    SectionLabel(text = "Bundled reports")
+                }
 
-            items(uiState.assetReports) { asset ->
-                ReportSourceRow(
-                    title = prettifyReportName(asset.displayName),
-                    subtitle = "Bundled sample",
-                    supporting = asset.displayName,
-                    selected = uiState.selectedSource == asset,
-                    leadingIcon = Icons.Default.FolderZip,
-                    onClick = { viewModel.selectAsset(asset) }
-                )
+                item {
+                    BundledReportsPager(
+                        reports = assetReports,
+                        selectedIndex = selectedAssetIndex,
+                        pagerState = pagerState,
+                        onSelect = viewModel::selectAsset
+                    )
+                }
             }
 
             item {
@@ -170,7 +198,7 @@ fun IntroScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(92.dp))
+                Spacer(modifier = Modifier.height(48.dp))
             }
         }
     }
@@ -225,6 +253,56 @@ private fun SectionLabel(text: String) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = 6.dp)
     )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun BundledReportsPager(
+    reports: List<AssetReportSource>,
+    selectedIndex: Int,
+    pagerState: androidx.compose.foundation.pager.PagerState,
+    onSelect: (AssetReportSource) -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth()
+        ) { page ->
+            val asset = reports[page]
+            Box(modifier = Modifier.padding(horizontal = 2.dp)) {
+                ReportSourceRow(
+                    title = prettifyReportName(asset.displayName),
+                    subtitle = "Bundled sample",
+                    supporting = asset.displayName,
+                    selected = selectedIndex == page,
+                    leadingIcon = Icons.Default.FolderZip,
+                    onClick = { onSelect(asset) }
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            reports.indices.forEach { index ->
+                val isSelected = index == selectedIndex
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .size(width = if (isSelected) 18.dp else 8.dp, height = 8.dp),
+                    color = if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+                    },
+                    shape = MaterialTheme.shapes.small
+                ) {}
+            }
+        }
+    }
 }
 
 @Composable
@@ -343,7 +421,7 @@ private fun SelectionFooter(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Surface(
