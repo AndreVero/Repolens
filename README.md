@@ -1,7 +1,7 @@
 # RepoLens Mobile
 
 <p align="center">
-  <img src="docs/icon.png" width="120" alt="RepoLens Mobile logo" />
+  <img src="docs/ibm_bob_icon.png" width="120" alt="RepoLens Mobile logo" />
 </p>
 
 <p align="center">
@@ -25,6 +25,12 @@
 </p>
 
 ---
+
+## Try the App
+
+Download the APK from the latest GitHub Release:
+
+[Download RepoLens Mobile APK](https://github.com/AndreVero/Repolens/releases/latest)
 
 ## Overview
 
@@ -149,6 +155,10 @@ It can show:
 
 This helps developers understand how the project is built before changing code.
 
+<p align="center">
+  <img src="docs/Screenshot_20260516_170402.png" width="120" alt="RepoLens Mobile logo" />
+</p>
+
 ---
 
 ### Feature Visualizer
@@ -174,6 +184,9 @@ For each feature, the app can show:
 
 This is especially useful for onboarding or modifying unfamiliar parts of a project.
 
+<p align="center">
+  <img src="docs/Screenshot_20260516_170437.png" width="120" alt="RepoLens Mobile logo" />
+</p>
 ---
 
 ### Risk Management
@@ -217,6 +230,9 @@ Examples:
 
 The goal is not only to describe the codebase, but to help developers improve it.
 
+<p align="center">
+  <img src="docs/Screenshot_20260516_170640.png" width="120" alt="RepoLens Mobile logo" />
+</p>
 ---
 
 ### Action Items
@@ -235,6 +251,9 @@ Action items can help with:
 
 This makes the analysis actionable instead of being passive documentation.
 
+<p align="center">
+  <img src="docs/Screenshot_20260516_170525.png" width="120" alt="RepoLens Mobile logo" />
+</p>
 ---
 
 ### Complete Project Structure Overview
@@ -256,6 +275,10 @@ RepoLens is designed to visualize the full structure of an Android project, incl
 - testing
 - documentation
 - PR readiness
+
+<p align="center">
+  <img src="docs/Screenshot_20260516_170545.png" width="120" alt="RepoLens Mobile logo" />
+</p>
 
 ---
 
