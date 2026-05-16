@@ -51,6 +51,18 @@ You can install the APK, open RepoLens Mobile, and explore Bob-generated reposit
 
 ---
 
+## Why a Mobile App?
+
+RepoLens is a mobile app by design.
+
+Since the project focuses specifically on Android repositories, I wanted the solution itself to live inside the Android ecosystem. The goal was to show how IBM Bob can accelerate real mobile development workflows, not only by generating code, but also by helping developers understand architecture, features, risks, tests, recommendations, and PR readiness.
+
+RepoLens is not meant to replace the IDE. Instead, it acts as a lightweight Android-first companion for exploring Bob-generated repository intelligence.
+
+A mobile experience makes the analysis easy to review in a focused, touch-friendly format. This can be useful during onboarding, code review preparation, team discussions, quick project health checks, or when a developer wants to understand a codebase without manually jumping across many files.
+
+The mobile format is part of the product idea: RepoLens is built by an Android developer, for Android projects, using Android-native UI patterns and Material 3.
+
 ## Overview
 
 **RepoLens Mobile** is an Android-first repository intelligence visualizer powered by **IBM Bob**.
