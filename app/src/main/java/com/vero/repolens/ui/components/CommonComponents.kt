@@ -121,10 +121,10 @@ fun SeverityBadge(
     modifier: Modifier = Modifier
 ) {
     val (color, textColor) = when (severity.lowercase()) {
-        "critical" -> MaterialTheme.colorScheme.error.copy(alpha = 0.16f) to MaterialTheme.colorScheme.error
-        "high" -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.34f) to MaterialTheme.colorScheme.onErrorContainer
-        "medium" -> Color(0xFFFF9800).copy(alpha = 0.16f) to Color(0xFFB56A00)
-        "low" -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.32f) to MaterialTheme.colorScheme.onTertiaryContainer
+        "critical" -> Color(0xFF8B1E2D).copy(alpha = 0.82f) to Color(0xFFFFF4F5)
+        "high" -> Color(0xFFB54A2A).copy(alpha = 0.80f) to Color(0xFFFFF7F3)
+        "medium" -> Color(0xFF9C6300).copy(alpha = 0.82f) to Color(0xFFFFF8E8)
+        "low" -> Color(0xFF2F7A45).copy(alpha = 0.80f) to Color(0xFFF4FFF7)
         else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
     }
 
@@ -143,9 +143,9 @@ fun ComplexityBadge(
     modifier: Modifier = Modifier
 ) {
     val (color, textColor) = when (complexity.lowercase()) {
-        "high" -> Color(0xFFE91E63).copy(alpha = 0.16f) to Color(0xFFB01855)
-        "medium" -> Color(0xFFBFDDF9).copy(alpha = 0.36f) to Color(0xFF0D47A1)
-        "low" -> Color(0xFF4CAF50).copy(alpha = 0.16f) to Color(0xFF2E7D32)
+        "high" -> Color(0xFFA83263).copy(alpha = 0.82f) to Color(0xFFFFF5F9)
+        "medium" -> Color(0xFF215EA8).copy(alpha = 0.78f) to Color(0xFFF4F8FF)
+        "low" -> Color(0xFF2F7A45).copy(alpha = 0.80f) to Color(0xFFF4FFF7)
         else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
     }
 
@@ -165,9 +165,9 @@ fun ConfidenceBadge(
 ) {
     val percentage = (confidence * 100).toInt()
     val (color, textColor) = when {
-        confidence >= 0.8 -> Color(0xFF4CAF50).copy(alpha = 0.16f) to Color(0xFF2E7D32)
-        confidence >= 0.6 -> Color(0xFF2196F3).copy(alpha = 0.16f) to Color(0xFF1565C0)
-        else -> Color(0xFFFF9800).copy(alpha = 0.16f) to Color(0xFFB56A00)
+        confidence >= 0.8 -> Color(0xFF2F7A45).copy(alpha = 0.80f) to Color(0xFFF4FFF7)
+        confidence >= 0.6 -> Color(0xFF215EA8).copy(alpha = 0.78f) to Color(0xFFF4F8FF)
+        else -> Color(0xFF9C6300).copy(alpha = 0.82f) to Color(0xFFFFF8E8)
     }
 
     BadgePill(

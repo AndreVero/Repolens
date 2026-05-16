@@ -478,6 +478,7 @@ private fun SelectionFooter(
                 }
                 Text(if (isLoading) "Opening report..." else "Open Report")
             }
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
