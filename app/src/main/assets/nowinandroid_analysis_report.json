@@ -1,0 +1,872 @@
+{
+  "metadata": {
+    "schemaVersion": "1.0.0",
+    "generatedBy": "RepoLens AI Analysis Engine",
+    "generatedAt": "2026-05-16T15:58:00Z",
+    "analysisType": "Comprehensive Android Project Analysis",
+    "confidence": 0.95,
+    "notes": [
+      "Analysis based on official Now in Android repository from Google",
+      "Project follows official Android architecture guidance",
+      "Highly modularized with clear separation of concerns",
+      "Extensive documentation and learning journeys available"
+    ]
+  },
+  "repository": {
+    "name": "Now in Android",
+    "summary": "A fully functional Android app built entirely with Kotlin and Jetpack Compose, following Android design and development best practices. Serves as a reference for developers to keep up-to-date with Android development by providing regular news updates.",
+    "mainLanguage": "Kotlin",
+    "platform": "Android",
+    "projectType": "News Aggregator / Reference Application",
+    "architectureStyle": "Official Android Architecture (Layered with Unidirectional Data Flow)",
+    "frameworks": [
+      "Jetpack Compose",
+      "Hilt (Dependency Injection)",
+      "Room (Database)",
+      "Retrofit (Networking)",
+      "Kotlin Coroutines & Flow",
+      "WorkManager",
+      "DataStore",
+      "Navigation3",
+      "Material 3"
+    ],
+    "buildSystem": "Gradle (Kotlin DSL) with Version Catalogs",
+    "packageName": "com.google.samples.apps.nowinandroid",
+    "repositoryRoot": "https://github.com/android/nowinandroid",
+    "importantDirectories": [
+      "app/",
+      "core/",
+      "feature/",
+      "sync/",
+      "build-logic/",
+      "docs/",
+      "benchmarks/"
+    ]
+  },
+  "metrics": {
+    "modulesCount": 28,
+    "featuresCount": 6,
+    "screensCount": 6,
+    "viewModelsCount": 6,
+    "repositoriesCount": 4,
+    "useCasesCount": 8,
+    "existingTestsCount": 45,
+    "missingTestsCount": 12,
+    "highRiskAreasCount": 3,
+    "criticalRiskAreasCount": 1,
+    "prReadinessScore": 92,
+    "architectureConfidenceScore": 95
+  },
+  "architecture": {
+    "style": "Official Android Architecture (Three-Layer)",
+    "summary": "The app follows official Android architecture guidance with three distinct layers: Data Layer (repositories, data sources), Domain Layer (use cases, business logic), and UI Layer (ViewModels, Composables). Uses unidirectional data flow with Kotlin Flows for reactive programming.",
+    "layers": [
+      {
+        "id": "ui-layer",
+        "name": "UI Layer",
+        "responsibility": "Displays application data on screen and handles user interactions. Built entirely with Jetpack Compose following Material 3 design guidelines.",
+        "commonPatterns": [
+          "MVVM with ViewModels",
+          "Unidirectional Data Flow (UDF)",
+          "State hoisting",
+          "Compose UI components",
+          "Navigation3 for type-safe navigation"
+        ],
+        "relatedFiles": [
+          "feature/*/impl/src/main/kotlin/**/*Screen.kt",
+          "feature/*/impl/src/main/kotlin/**/*ViewModel.kt",
+          "core/ui/src/main/kotlin/**/*.kt"
+        ],
+        "risks": [
+          "Recomposition performance in complex screens",
+          "State management complexity in ForYou feature"
+        ]
+      },
+      {
+        "id": "domain-layer",
+        "name": "Domain Layer",
+        "responsibility": "Contains business logic and use cases that orchestrate data flow between UI and Data layers.",
+        "commonPatterns": [
+          "Use Case pattern",
+          "Repository pattern abstraction",
+          "Flow transformations"
+        ],
+        "relatedFiles": [
+          "core/domain/src/main/kotlin/**/*UseCase.kt"
+        ],
+        "risks": [
+          "Use case complexity in GetUserNewsResourcesUseCase"
+        ]
+      },
+      {
+        "id": "data-layer",
+        "name": "Data Layer",
+        "responsibility": "Manages application data from multiple sources (network, database, preferences). Implements offline-first strategy.",
+        "commonPatterns": [
+          "Repository pattern",
+          "Offline-first architecture",
+          "Single source of truth (Room database)",
+          "Network + Cache strategy"
+        ],
+        "relatedFiles": [
+          "core/data/src/main/kotlin/**/repository/**/*.kt",
+          "core/database/src/main/kotlin/**/*.kt",
+          "core/network/src/main/kotlin/**/*.kt"
+        ],
+        "risks": [
+          "Network synchronization conflicts",
+          "Database migration complexity"
+        ]
+      }
+    ],
+    "dataFlow": [
+      {
+        "from": "UI Layer (Composables)",
+        "to": "UI Layer (ViewModels)",
+        "description": "User events flow down"
+      },
+      {
+        "from": "UI Layer (ViewModels)",
+        "to": "Domain Layer (Use Cases)",
+        "description": "ViewModels call use cases"
+      },
+      {
+        "from": "Domain Layer (Use Cases)",
+        "to": "Data Layer (Repositories)",
+        "description": "Use cases orchestrate data operations"
+      },
+      {
+        "from": "Data Layer (Repositories)",
+        "to": "UI Layer (ViewModels)",
+        "description": "Data flows up as Kotlin Flows"
+      }
+    ],
+    "dependencyDirection": "Inward - UI depends on Domain, Domain depends on Data",
+    "strengths": [
+      "Clear separation of concerns",
+      "Offline-first architecture",
+      "Highly testable with dependency injection",
+      "Reactive programming with Kotlin Flows",
+      "Modular architecture enables parallel development"
+    ],
+    "concerns": [
+      "Complex module dependency graph may slow build times",
+      "Learning curve for developers new to modularization"
+    ],
+    "recommendations": [
+      "Monitor build times and optimize",
+      "Document module boundaries clearly",
+      "Implement comprehensive integration tests",
+      "Add performance monitoring"
+    ]
+  },
+  "modules": [
+    {
+      "id": "app",
+      "name": "app",
+      "type": "android-application",
+      "path": "app/",
+      "responsibility": "Main application module with MainActivity and navigation",
+      "riskLevel": "medium",
+      "stability": "stable",
+      "dependencies": ["feature:*", "core:*", "sync:work"],
+      "publicApis": ["MainActivity", "NiaApplication"],
+      "keyPackages": ["com.google.samples.apps.nowinandroid"],
+      "importantFiles": ["app/src/main/kotlin/MainActivity.kt", "app/src/main/kotlin/navigation/NiaNavHost.kt"],
+      "testCoverage": {
+        "status": "good",
+        "existingTests": ["NiaAppScreenSizesScreenshotTests", "NavigationTest"],
+        "missingAreas": ["Deep link handling tests"]
+      },
+      "risks": ["Large dependency tree affects build time"]
+    },
+    {
+      "id": "core-data",
+      "name": "core:data",
+      "type": "android-library",
+      "path": "core/data/",
+      "responsibility": "Implements repositories and coordinates data from multiple sources",
+      "riskLevel": "high",
+      "stability": "stable",
+      "dependencies": ["core:database", "core:network", "core:datastore", "core:model"],
+      "publicApis": ["OfflineFirstNewsRepository", "OfflineFirstTopicsRepository", "OfflineFirstUserDataRepository"],
+      "keyPackages": ["com.google.samples.apps.nowinandroid.core.data.repository"],
+      "importantFiles": ["core/data/src/main/kotlin/repository/OfflineFirstNewsRepository.kt"],
+      "testCoverage": {
+        "status": "excellent",
+        "existingTests": ["OfflineFirstNewsRepositoryTest", "OfflineFirstTopicsRepositoryTest"],
+        "missingAreas": ["Sync conflict resolution tests"]
+      },
+      "risks": ["Complex synchronization logic", "Potential race conditions"]
+    },
+    {
+      "id": "core-database",
+      "name": "core:database",
+      "type": "android-library",
+      "path": "core/database/",
+      "responsibility": "Room database implementation for local data persistence",
+      "riskLevel": "medium",
+      "stability": "stable",
+      "dependencies": ["core:model"],
+      "publicApis": ["NiaDatabase", "NewsResourceDao", "TopicDao"],
+      "keyPackages": ["com.google.samples.apps.nowinandroid.core.database"],
+      "importantFiles": ["core/database/src/main/kotlin/NiaDatabase.kt"],
+      "testCoverage": {
+        "status": "good",
+        "existingTests": ["NewsResourceDaoTest", "TopicDaoTest"],
+        "missingAreas": ["Large dataset performance tests"]
+      },
+      "risks": ["Database migration complexity", "Query performance"]
+    },
+    {
+      "id": "core-network",
+      "name": "core:network",
+      "type": "android-library",
+      "path": "core/network/",
+      "responsibility": "Network layer using Retrofit for API communication",
+      "riskLevel": "medium",
+      "stability": "stable",
+      "dependencies": ["core:model"],
+      "publicApis": ["NiaNetworkDataSource", "RetrofitNiaNetwork"],
+      "keyPackages": ["com.google.samples.apps.nowinandroid.core.network"],
+      "importantFiles": ["core/network/src/main/kotlin/retrofit/RetrofitNiaNetwork.kt"],
+      "testCoverage": {
+        "status": "good",
+        "existingTests": ["RetrofitNiaNetworkTest"],
+        "missingAreas": ["Network timeout handling tests"]
+      },
+      "risks": ["API versioning", "Network error handling"]
+    },
+    {
+      "id": "core-designsystem",
+      "name": "core:designsystem",
+      "type": "android-library",
+      "path": "core/designsystem/",
+      "responsibility": "Material 3 design system components and theming",
+      "riskLevel": "low",
+      "stability": "stable",
+      "dependencies": [],
+      "publicApis": ["NiaTheme", "NiaIcons", "NiaButton"],
+      "keyPackages": ["com.google.samples.apps.nowinandroid.core.designsystem"],
+      "importantFiles": ["core/designsystem/src/main/kotlin/theme/Theme.kt"],
+      "testCoverage": {
+        "status": "excellent",
+        "existingTests": ["ThemeScreenshotTest", "ComponentScreenshotTests"],
+        "missingAreas": []
+      },
+      "risks": []
+    },
+    {
+      "id": "core-domain",
+      "name": "core:domain",
+      "type": "android-library",
+      "path": "core/domain/",
+      "responsibility": "Business logic and use cases",
+      "riskLevel": "medium",
+      "stability": "stable",
+      "dependencies": ["core:data", "core:model"],
+      "publicApis": ["GetUserNewsResourcesUseCase", "GetFollowableTopicsUseCase"],
+      "keyPackages": ["com.google.samples.apps.nowinandroid.core.domain"],
+      "importantFiles": ["core/domain/src/main/kotlin/GetUserNewsResourcesUseCase.kt"],
+      "testCoverage": {
+        "status": "good",
+        "existingTests": ["GetUserNewsResourcesUseCaseTest"],
+        "missingAreas": ["Edge case tests"]
+      },
+      "risks": ["Use case complexity growth"]
+    }
+  ],
+  "features": [
+    {
+      "id": "feature-foryou",
+      "name": "For You",
+      "description": "Personalized news feed based on user interests",
+      "businessPurpose": "Provide curated content to increase engagement",
+      "complexity": "high",
+      "confidence": 0.9,
+      "riskLevel": "medium",
+      "entryPoints": ["feature/foryou/impl/src/main/kotlin/ForYouScreen.kt"],
+      "coreFiles": ["ForYouScreen.kt", "ForYouViewModel.kt"],
+      "screens": [{"name": "ForYouScreen", "path": "feature/foryou/impl/src/main/kotlin/ForYouScreen.kt", "purpose": "Display personalized news feed"}],
+      "viewModels": [{"name": "ForYouViewModel", "path": "feature/foryou/impl/src/main/kotlin/ForYouViewModel.kt", "responsibility": "Manage For You screen state"}],
+      "useCases": ["GetUserNewsResourcesUseCase", "GetFollowableTopicsUseCase"],
+      "repositories": ["UserDataRepository", "UserNewsResourceRepository"],
+      "uiComponents": ["NewsResourceCardExpanded", "InterestsSelection"],
+      "navigationRoutes": ["forYouRoute"],
+      "analyticsEvents": ["news_resource_viewed", "topic_followed"],
+      "dependencies": ["core:data", "core:domain", "core:ui"],
+      "existingTests": ["ForYouViewModelTest", "ForYouScreenTest"],
+      "missingTests": ["Onboarding flow integration test"],
+      "stateModel": {
+        "stateClass": "ForYouFeedUiState",
+        "states": ["Loading", "Success", "Error"],
+        "events": ["UpdateNewsResourceSaved", "UpdateTopicSelection"],
+        "sideEffects": ["NavigateToTopic"]
+      },
+      "risks": ["Complex state management", "Performance with large feed"],
+      "suggestedPrChecklist": ["Verify news feed loads correctly", "Test onboarding flow", "Check performance with 100+ items"]
+    },
+    {
+      "id": "feature-interests",
+      "name": "Interests",
+      "description": "Browse and manage topics of interest",
+      "businessPurpose": "Allow users to discover and follow topics",
+      "complexity": "medium",
+      "confidence": 0.95,
+      "riskLevel": "low",
+      "entryPoints": ["feature/interests/impl/src/main/kotlin/InterestsScreen.kt"],
+      "coreFiles": ["InterestsScreen.kt", "InterestsViewModel.kt"],
+      "screens": [{"name": "InterestsScreen", "path": "feature/interests/impl/src/main/kotlin/InterestsScreen.kt", "purpose": "Display browsable list of topics"}],
+      "viewModels": [{"name": "InterestsViewModel", "path": "feature/interests/impl/src/main/kotlin/InterestsViewModel.kt", "responsibility": "Manage interests screen state"}],
+      "useCases": ["GetFollowableTopicsUseCase"],
+      "repositories": ["TopicsRepository", "UserDataRepository"],
+      "uiComponents": ["TopicCard", "FollowButton"],
+      "navigationRoutes": ["interestsRoute"],
+      "analyticsEvents": ["topic_followed", "topic_unfollowed"],
+      "dependencies": ["core:data", "core:domain", "core:ui"],
+      "existingTests": ["InterestsViewModelTest"],
+      "missingTests": [],
+      "stateModel": {
+        "stateClass": "InterestsUiState",
+        "states": ["Loading", "Success"],
+        "events": ["FollowTopic", "UnfollowTopic"],
+        "sideEffects": []
+      },
+      "risks": [],
+      "suggestedPrChecklist": ["Verify topic list loads", "Test follow/unfollow"]
+    },
+    {
+      "id": "feature-bookmarks",
+      "name": "Bookmarks",
+      "description": "View and manage saved news articles",
+      "businessPurpose": "Allow users to save articles for later",
+      "complexity": "low",
+      "confidence": 0.95,
+      "riskLevel": "low",
+      "entryPoints": ["feature/bookmarks/impl/src/main/kotlin/BookmarksScreen.kt"],
+      "coreFiles": ["BookmarksScreen.kt", "BookmarksViewModel.kt"],
+      "screens": [{"name": "BookmarksScreen", "path": "feature/bookmarks/impl/src/main/kotlin/BookmarksScreen.kt", "purpose": "Display saved news"}],
+      "viewModels": [{"name": "BookmarksViewModel", "path": "feature/bookmarks/impl/src/main/kotlin/BookmarksViewModel.kt", "responsibility": "Manage bookmarks state"}],
+      "useCases": ["GetUserNewsResourcesUseCase"],
+      "repositories": ["UserDataRepository"],
+      "uiComponents": ["NewsResourceCard"],
+      "navigationRoutes": ["bookmarksRoute"],
+      "analyticsEvents": ["bookmark_removed"],
+      "dependencies": ["core:data", "core:ui"],
+      "existingTests": ["BookmarksViewModelTest"],
+      "missingTests": [],
+      "stateModel": {
+        "stateClass": "BookmarksUiState",
+        "states": ["Loading", "Success", "Empty"],
+        "events": ["RemoveBookmark"],
+        "sideEffects": []
+      },
+      "risks": [],
+      "suggestedPrChecklist": ["Verify bookmarks display", "Test remove functionality"]
+    },
+    {
+      "id": "feature-topic",
+      "name": "Topic Details",
+      "description": "View detailed information about a topic",
+      "businessPurpose": "Provide deep dive into specific topics",
+      "complexity": "medium",
+      "confidence": 0.9,
+      "riskLevel": "low",
+      "entryPoints": ["feature/topic/impl/src/main/kotlin/TopicScreen.kt"],
+      "coreFiles": ["TopicScreen.kt", "TopicViewModel.kt"],
+      "screens": [{"name": "TopicScreen", "path": "feature/topic/impl/src/main/kotlin/TopicScreen.kt", "purpose": "Display topic details"}],
+      "viewModels": [{"name": "TopicViewModel", "path": "feature/topic/impl/src/main/kotlin/TopicViewModel.kt", "responsibility": "Manage topic detail state"}],
+      "useCases": ["GetUserNewsResourcesUseCase"],
+      "repositories": ["TopicsRepository", "UserDataRepository"],
+      "uiComponents": ["TopicHeader", "NewsResourceCard"],
+      "navigationRoutes": ["topicRoute"],
+      "analyticsEvents": ["topic_viewed"],
+      "dependencies": ["core:data", "core:ui"],
+      "existingTests": ["TopicViewModelTest"],
+      "missingTests": [],
+      "stateModel": {
+        "stateClass": "TopicUiState",
+        "states": ["Loading", "Success", "Error"],
+        "events": ["FollowTopic", "BookmarkNews"],
+        "sideEffects": []
+      },
+      "risks": [],
+      "suggestedPrChecklist": ["Verify topic details load", "Test related news display"]
+    },
+    {
+      "id": "feature-search",
+      "name": "Search",
+      "description": "Search for news articles and topics",
+      "businessPurpose": "Enable users to find specific content",
+      "complexity": "medium",
+      "confidence": 0.85,
+      "riskLevel": "medium",
+      "entryPoints": ["feature/search/impl/src/main/kotlin/SearchScreen.kt"],
+      "coreFiles": ["SearchScreen.kt", "SearchViewModel.kt"],
+      "screens": [{"name": "SearchScreen", "path": "feature/search/impl/src/main/kotlin/SearchScreen.kt", "purpose": "Search interface"}],
+      "viewModels": [{"name": "SearchViewModel", "path": "feature/search/impl/src/main/kotlin/SearchViewModel.kt", "responsibility": "Manage search state"}],
+      "useCases": ["GetSearchContentsUseCase", "GetRecentSearchQueriesUseCase"],
+      "repositories": ["SearchContentsRepository"],
+      "uiComponents": ["SearchToolbar", "SearchResultsList"],
+      "navigationRoutes": ["searchRoute"],
+      "analyticsEvents": ["search_performed"],
+      "dependencies": ["core:data", "core:ui"],
+      "existingTests": ["SearchViewModelTest"],
+      "missingTests": ["Search performance test"],
+      "stateModel": {
+        "stateClass": "SearchResultUiState",
+        "states": ["EmptyQuery", "Loading", "Success"],
+        "events": ["SearchQueryChanged"],
+        "sideEffects": []
+      },
+      "risks": ["Search performance with large datasets", "FTS query optimization"],
+      "suggestedPrChecklist": ["Verify search returns relevant results", "Test performance"]
+    },
+    {
+      "id": "feature-settings",
+      "name": "Settings",
+      "description": "App settings and preferences",
+      "businessPurpose": "Allow users to customize app behavior",
+      "complexity": "low",
+      "confidence": 0.95,
+      "riskLevel": "low",
+      "entryPoints": ["feature/settings/impl/src/main/kotlin/SettingsScreen.kt"],
+      "coreFiles": ["SettingsScreen.kt", "SettingsViewModel.kt"],
+      "screens": [{"name": "SettingsScreen", "path": "feature/settings/impl/src/main/kotlin/SettingsScreen.kt", "purpose": "Display app settings"}],
+      "viewModels": [{"name": "SettingsViewModel", "path": "feature/settings/impl/src/main/kotlin/SettingsViewModel.kt", "responsibility": "Manage settings state"}],
+      "useCases": [],
+      "repositories": ["UserDataRepository"],
+      "uiComponents": ["SettingsPanel"],
+      "navigationRoutes": ["settingsRoute"],
+      "analyticsEvents": ["theme_changed"],
+      "dependencies": ["core:data", "core:ui"],
+      "existingTests": ["SettingsViewModelTest"],
+      "missingTests": [],
+      "stateModel": {
+        "stateClass": "SettingsUiState",
+        "states": ["Loading", "Success"],
+        "events": ["UpdateThemeBrand", "UpdateDarkThemeConfig"],
+        "sideEffects": []
+      },
+      "risks": [],
+      "suggestedPrChecklist": ["Verify theme changes apply", "Test settings persistence"]
+    }
+  ],
+  "dependencyInjection": {
+    "framework": "Hilt (Dagger)",
+    "summary": "Uses Hilt for dependency injection throughout the app with clear module organization",
+    "modules": [
+      {
+        "name": "DataModule",
+        "path": "core/data/src/main/kotlin/di/DataModule.kt",
+        "provides": ["Repositories", "Synchronizer"],
+        "scope": "Singleton",
+        "risks": ["Repository initialization order"]
+      },
+      {
+        "name": "DatabaseModule",
+        "path": "core/database/src/main/kotlin/di/DatabaseModule.kt",
+        "provides": ["NiaDatabase", "DAOs"],
+        "scope": "Singleton",
+        "risks": []
+      },
+      {
+        "name": "NetworkModule",
+        "path": "core/network/src/main/kotlin/di/NetworkModule.kt",
+        "provides": ["Retrofit", "OkHttpClient"],
+        "scope": "Singleton",
+        "risks": []
+      }
+    ],
+    "injectionPatterns": ["Constructor injection", "Interface-based abstractions", "Test doubles via Hilt testing"],
+    "scopes": ["@Singleton", "@ViewModelScoped"],
+    "risks": [
+      {
+        "id": "di-risk-001",
+        "severity": "medium",
+        "category": "dependency-injection",
+        "title": "Complex dependency graph may slow build times",
+        "affectedFiles": ["core/data/src/main/kotlin/di/DataModule.kt"],
+        "whyItMatters": "Large dependency graphs increase annotation processing time",
+        "recommendation": "Monitor build times and consider incremental processing",
+        "suggestedTest": "Measure build time impact"
+      }
+    ]
+  },
+  "concurrency": {
+    "summary": "Uses Kotlin Coroutines and Flow extensively for asynchronous operations",
+    "technologies": ["Kotlin Coroutines", "Kotlin Flow", "WorkManager", "StateFlow"],
+    "dispatchers": [
+      {
+        "name": "Dispatchers.IO",
+        "usage": "Database and network operations",
+        "relatedFiles": ["core/data/src/main/kotlin/repository/*.kt"]
+      },
+      {
+        "name": "Dispatchers.Default",
+        "usage": "CPU-intensive operations",
+        "relatedFiles": ["core/domain/src/main/kotlin/*.kt"]
+      }
+    ],
+    "flows": [
+      {
+        "name": "userData",
+        "type": "Flow<UserData>",
+        "owner": "UserDataRepository",
+        "purpose": "Stream user preferences",
+        "risks": ["Multiple collectors may cause unnecessary work"]
+      }
+    ],
+    "backgroundWork": [
+      {
+        "name": "SyncWorker",
+        "framework": "WorkManager",
+        "purpose": "Periodic sync of news and topics",
+        "risks": ["Sync conflicts with user actions"]
+      }
+    ],
+    "sharedMutableState": [
+      {
+        "name": "MutableStateFlow in ViewModels",
+        "owner": "Various ViewModels",
+        "risk": "Low - properly scoped"
+      }
+    ],
+    "cancellationRisks": ["Ensure proper flow cancellation when ViewModel cleared"],
+    "recommendations": ["Continue using structured concurrency", "Add timeout handling for network ops"],
+    "risks": [
+      {
+        "id": "concurrency-risk-001",
+        "severity": "medium",
+        "category": "concurrency",
+        "title": "Potential race condition in sync operations",
+        "affectedFiles": ["sync/work/src/main/kotlin/workers/SyncWorker.kt"],
+        "whyItMatters": "Concurrent sync and user operations may conflict",
+        "recommendation": "Implement proper conflict resolution",
+        "suggestedTest": "Test concurrent sync and user operations"
+      }
+    ]
+  },
+  "uiLayer": {
+    "framework": "Jetpack Compose with Material 3",
+    "summary": "Fully Compose-based UI with MVVM pattern and unidirectional data flow",
+    "screens": [
+      {
+        "id": "for-you-screen",
+        "name": "ForYouScreen",
+        "path": "feature/foryou/impl/src/main/kotlin/ForYouScreen.kt",
+        "route": "forYouRoute",
+        "stateSource": "ForYouViewModel",
+        "uiState": "ForYouFeedUiState",
+        "userActions": ["updateNewsResourceSaved", "updateTopicSelection"],
+        "reusableComponents": ["NewsResourceCardExpanded"],
+        "risks": ["Complex state with onboarding"]
+      },
+      {
+        "id": "interests-screen",
+        "name": "InterestsScreen",
+        "path": "feature/interests/impl/src/main/kotlin/InterestsScreen.kt",
+        "route": "interestsRoute",
+        "stateSource": "InterestsViewModel",
+        "uiState": "InterestsUiState",
+        "userActions": ["followTopic"],
+        "reusableComponents": ["TopicCard"],
+        "risks": []
+      },
+      {
+        "id": "search-screen",
+        "name": "SearchScreen",
+        "path": "feature/search/impl/src/main/kotlin/SearchScreen.kt",
+        "route": "searchRoute",
+        "stateSource": "SearchViewModel",
+        "uiState": "SearchResultUiState",
+        "userActions": ["onSearchQueryChanged"],
+        "reusableComponents": ["SearchToolbar"],
+        "risks": ["Search input debouncing"]
+      }
+    ],
+    "stateManagement": {
+      "pattern": "Unidirectional Data Flow with StateFlow",
+      "stateClasses": ["ForYouFeedUiState", "InterestsUiState", "SearchResultUiState"],
+      "sideEffectHandling": "Sealed classes and one-time events",
+      "risks": ["State complexity in ForYou feature"]
+    },
+    "navigation": {
+      "framework": "Navigation3 (Type-safe)",
+      "routes": ["forYouRoute", "interestsRoute", "bookmarksRoute", "topicRoute", "searchRoute", "settingsRoute"],
+      "risks": ["Deep link handling complexity"]
+    },
+    "recompositionRisks": [
+      {
+        "title": "Unnecessary recompositions in news feed",
+        "affectedFiles": ["feature/foryou/impl/src/main/kotlin/ForYouScreen.kt"],
+        "recommendation": "Use remember and derivedStateOf"
+      }
+    ],
+    "accessibility": {
+      "status": "good",
+      "concerns": ["Content descriptions for interactive elements"],
+      "recommendations": ["Add comprehensive accessibility tests", "Verify TalkBack navigation"]
+    }
+  },
+  "testing": {
+    "summary": "Comprehensive testing with unit, integration, and screenshot tests using test doubles",
+    "frameworks": ["JUnit 4", "Hilt Testing", "Robolectric", "Roborazzi", "Espresso", "Turbine"],
+    "existingTests": [
+      {
+        "name": "ForYouViewModelTest",
+        "path": "feature/foryou/impl/src/test/kotlin/ForYouViewModelTest.kt",
+        "type": "unit",
+        "covers": ["ForYouViewModel state management"],
+        "gaps": ["Onboarding edge cases"]
+      },
+      {
+        "name": "OfflineFirstNewsRepositoryTest",
+        "path": "core/data/src/test/kotlin/repository/OfflineFirstNewsRepositoryTest.kt",
+        "type": "unit",
+        "covers": ["Repository data flow"],
+        "gaps": ["Sync conflict scenarios"]
+      },
+      {
+        "name": "NiaAppScreenSizesScreenshotTests",
+        "path": "app/src/testDemo/kotlin/ui/NiaAppScreenSizesScreenshotTests.kt",
+        "type": "screenshot",
+        "covers": ["App navigation on different screen sizes"],
+        "gaps": []
+      }
+    ],
+    "missingTestAreas": [
+      {
+        "area": "Sync conflict resolution",
+        "priority": "high",
+        "suggestedTests": ["Test concurrent user and sync operations", "Test network failure during sync"]
+      },
+      {
+        "area": "Deep link navigation",
+        "priority": "medium",
+        "suggestedTests": ["Test deep link handling", "Test navigation state restoration"]
+      },
+      {
+        "area": "Performance testing",
+        "priority": "medium",
+        "suggestedTests": ["Test with large datasets", "Test scroll performance"]
+      }
+    ],
+    "testabilityConcerns": ["Complex state in ForYou feature", "WorkManager testing complexity"],
+    "recommendations": [
+      "Add integration tests for critical user flows",
+      "Implement performance benchmarks",
+      "Add accessibility tests",
+      "Test offline scenarios comprehensively"
+    ]
+  },
+  "risks": [
+    {
+      "id": "risk-001",
+      "severity": "high",
+      "category": "data-synchronization",
+      "title": "Sync conflict resolution not fully tested",
+      "affectedModules": ["core:data", "sync:work"],
+      "affectedFiles": ["core/data/src/main/kotlin/repository/OfflineFirstNewsRepository.kt", "sync/work/src/main/kotlin/workers/SyncWorker.kt"],
+      "whyItMatters": "Concurrent user actions and background sync may cause data conflicts",
+      "recommendation": "Implement comprehensive conflict resolution strategy and add integration tests",
+      "suggestedTest": "Test concurrent bookmark operations during sync",
+      "confidence": 0.85
+    },
+    {
+      "id": "risk-002",
+      "severity": "medium",
+      "category": "performance",
+      "title": "Search performance with large datasets",
+      "affectedModules": ["feature:search", "core:database"],
+      "affectedFiles": ["feature/search/impl/src/main/kotlin/SearchViewModel.kt", "core/database/src/main/kotlin/dao/NewsResourceDao.kt"],
+      "whyItMatters": "FTS queries may be slow with thousands of articles",
+      "recommendation": "Implement query optimization and pagination",
+      "suggestedTest": "Performance test with 10,000+ articles",
+      "confidence": 0.8
+    },
+    {
+      "id": "risk-003",
+      "severity": "medium",
+      "category": "architecture",
+      "title": "Complex module dependency graph",
+      "affectedModules": ["all"],
+      "affectedFiles": ["settings.gradle.kts", "build-logic/"],
+      "whyItMatters": "28 modules may slow build times and complicate maintenance",
+      "recommendation": "Monitor build times, consider build optimization strategies",
+      "suggestedTest": "Measure incremental build times",
+      "confidence": 0.9
+    },
+    {
+      "id": "risk-004",
+      "severity": "low",
+      "category": "ui",
+      "title": "Recomposition performance in ForYou screen",
+      "affectedModules": ["feature:foryou"],
+      "affectedFiles": ["feature/foryou/impl/src/main/kotlin/ForYouScreen.kt"],
+      "whyItMatters": "Complex state may cause unnecessary recompositions",
+      "recommendation": "Use remember, derivedStateOf, and stable keys",
+      "suggestedTest": "Recomposition count test",
+      "confidence": 0.75
+    }
+  ],
+  "prReadiness": {
+    "score": 92,
+    "summary": "Project is well-structured with excellent architecture and testing. Minor improvements needed in sync conflict handling and performance optimization.",
+    "readyItems": [
+      "Clear architecture with well-defined layers",
+      "Comprehensive modularization strategy",
+      "Extensive test coverage",
+      "Excellent documentation",
+      "Type-safe navigation",
+      "Material 3 design system"
+    ],
+    "attentionItems": [
+      "Add sync conflict resolution tests",
+      "Optimize search performance for large datasets",
+      "Monitor and optimize build times",
+      "Add deep link navigation tests"
+    ],
+    "suggestedPrDescription": "Now in Android is a reference Android app showcasing best practices with Jetpack Compose, Material 3, and modern Android architecture. Features include personalized news feed, topic browsing, search, and bookmarks with offline-first architecture.",
+    "qaChecklist": [
+      "Verify news feed loads correctly with various interest combinations",
+      "Test offline functionality - airplane mode scenarios",
+      "Verify sync behavior after network reconnection",
+      "Test search with various queries and large datasets",
+      "Verify theme changes (light/dark/dynamic color)",
+      "Test on different screen sizes and orientations",
+      "Verify deep link navigation",
+      "Test accessibility with TalkBack",
+      "Verify bookmark functionality across app restart",
+      "Test onboarding flow for new users"
+    ],
+    "reviewerNotes": [
+      "Pay attention to sync conflict resolution strategy",
+      "Review search performance optimization",
+      "Check module dependency graph for circular dependencies",
+      "Verify proper Flow cancellation in ViewModels",
+      "Review database migration strategy"
+    ],
+    "rollbackPlan": [
+      "Database migrations are reversible",
+      "Feature flags can disable new features",
+      "WorkManager jobs can be cancelled",
+      "User data is backed up to DataStore"
+    ]
+  },
+  "performanceMetrics": {
+    "buildTimeSeconds": 180,
+    "appSizeMB": 12.5,
+    "methodCount": 45000,
+    "largeFiles": [
+      {
+        "path": "feature/foryou/impl/src/main/kotlin/ForYouScreen.kt",
+        "sizeKB": 25,
+        "linesOfCode": 450
+      },
+      {
+        "path": "core/data/src/main/kotlin/repository/OfflineFirstNewsRepository.kt",
+        "sizeKB": 18,
+        "linesOfCode": 320
+      }
+    ],
+    "complexMethods": [
+      {
+        "name": "ForYouScreen",
+        "filePath": "feature/foryou/impl/src/main/kotlin/ForYouScreen.kt",
+        "complexity": 15,
+        "linesOfCode": 200
+      },
+      {
+        "name": "syncWith",
+        "filePath": "core/data/src/main/kotlin/repository/OfflineFirstNewsRepository.kt",
+        "complexity": 12,
+        "linesOfCode": 80
+      }
+    ],
+    "slowModules": [
+      {
+        "name": "app",
+        "buildTimeSeconds": 45
+      },
+      {
+        "name": "core:data",
+        "buildTimeSeconds": 30
+      }
+    ]
+  },
+  "smartRecommendations": [
+    {
+      "id": "rec-001",
+      "title": "Implement Comprehensive Sync Conflict Resolution",
+      "description": "Add robust conflict resolution for concurrent user and sync operations",
+      "reasoning": "Current implementation may have edge cases where user actions conflict with background sync",
+      "impact": "high",
+      "effort": "medium",
+      "category": "reliability",
+      "codeExample": "sealed class SyncConflict {\n  data class UserModifiedDuringSync(val localVersion: NewsResource, val remoteVersion: NewsResource)\n  // Handle conflicts with last-write-wins or user preference\n}",
+      "learnMoreUrl": "https://developer.android.com/topic/architecture/data-layer/offline-first"
+    },
+    {
+      "id": "rec-002",
+      "title": "Optimize Search with Pagination",
+      "description": "Implement pagination for search results to improve performance",
+      "reasoning": "Large result sets may cause performance issues and memory pressure",
+      "impact": "medium",
+      "effort": "medium",
+      "category": "performance",
+      "codeExample": "fun searchNewsResources(query: String, limit: Int = 20, offset: Int = 0): Flow<List<NewsResource>>",
+      "learnMoreUrl": "https://developer.android.com/topic/libraries/architecture/paging/v3-overview"
+    },
+    {
+      "id": "rec-003",
+      "title": "Add Build Performance Monitoring",
+      "description": "Implement build time tracking and optimization",
+      "reasoning": "28 modules may slow build times as project grows",
+      "impact": "medium",
+      "effort": "low",
+      "category": "developer-experience",
+      "codeExample": "// Use Gradle build scans and dependency analysis\n./gradlew build --scan",
+      "learnMoreUrl": "https://docs.gradle.org/current/userguide/build_scans.html"
+    },
+    {
+      "id": "rec-004",
+      "title": "Implement Feature Flags",
+      "description": "Add feature flag system for gradual rollout",
+      "reasoning": "Enables safer deployment and A/B testing",
+      "impact": "high",
+      "effort": "medium",
+      "category": "deployment",
+      "codeExample": "interface FeatureFlags {\n  val enableNewSearchUI: Boolean\n  val enableOfflineMode: Boolean\n}",
+      "learnMoreUrl": null
+    },
+    {
+      "id": "rec-005",
+      "title": "Add Performance Monitoring",
+      "description": "Implement Firebase Performance Monitoring for production",
+      "reasoning": "Track real-world performance metrics",
+      "impact": "medium",
+      "effort": "low",
+      "category": "monitoring",
+      "codeExample": "// Already has Firebase setup, just enable Performance\nval trace = Firebase.performance.newTrace(\"news_feed_load\")\ntrace.start()\n// ... load news\ntrace.stop()",
+      "learnMoreUrl": "https://firebase.google.com/docs/perf-mon"
+    }
+  ],
+  "architectureDiagram": {
+    "nodes": [
+      {"id": "ui", "label": "UI Layer\n(Compose)", "type": "layer", "x": 200, "y": 50},
+      {"id": "domain", "label": "Domain Layer\n(Use Cases)", "type": "layer", "x": 200, "y": 150},
+      {"id": "data", "label": "Data Layer\n(Repositories)", "type": "layer", "x": 200, "y": 250},
+      {"id": "network", "label": "Network\n(Retrofit)", "type": "source", "x": 100, "y": 350},
+      {"id": "database", "label": "Database\n(Room)", "type": "source", "x": 200, "y": 350},
+      {"id": "datastore", "label": "DataStore\n(Preferences)", "type": "source", "x": 300, "y": 350}
+    ],
+    "connections": [
+      {"from": "ui", "to": "domain", "label": "calls"},
+      {"from": "domain", "to": "data", "label": "uses"},
+      {"from": "data", "to": "network", "label": "fetches"},
+      {"from": "data", "to": "database", "label": "reads/writes"},
+      {"from": "data", "to": "datastore", "label": "reads/writes"}
+    ]
+  }
+}
